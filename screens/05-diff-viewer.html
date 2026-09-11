@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bug-to-PR Agent - Diff Viewer</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "secondary": "#bcc7de",
+                        "background": "#0b1326",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-container": "#d97721",
+                        "on-background": "#dae2fd",
+                        "primary-container": "#8083ff",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "surface-bright": "#31394d",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "on-tertiary": "#4f2500",
+                        "outline-variant": "#464554",
+                        "on-surface": "#dae2fd",
+                        "secondary-fixed": "#d8e3fb",
+                        "primary-fixed": "#e1e0ff",
+                        "on-error": "#690005",
+                        "on-primary-fixed": "#07006c",
+                        "inverse-primary": "#494bd6",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "surface-container-highest": "#2d3449",
+                        "surface-container-low": "#131b2e",
+                        "surface-variant": "#2d3449",
+                        "error-container": "#93000a",
+                        "secondary-container": "#3e495d",
+                        "error": "#ffb4ab",
+                        "surface": "#0b1326",
+                        "surface-tint": "#c0c1ff",
+                        "inverse-on-surface": "#283044",
+                        "surface-container": "#171f33",
+                        "on-tertiary-fixed": "#301400",
+                        "tertiary-fixed": "#ffdcc5",
+                        "on-secondary": "#263143",
+                        "surface-container-high": "#222a3d",
+                        "surface-container-lowest": "#060e20",
+                        "on-tertiary-container": "#452000",
+                        "surface-dim": "#0b1326",
+                        "inverse-surface": "#dae2fd",
+                        "tertiary": "#ffb783",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "on-secondary-fixed": "#111c2d",
+                        "outline": "#908fa0",
+                        "primary": "#c0c1ff",
+                        "on-secondary-container": "#aeb9d0",
+                        "on-primary": "#1000a9",
+                        "on-surface-variant": "#c7c4d7",
+                        "on-primary-container": "#0d0096",
+                        
+                        /* Diff semantic colors explicitly requested */
+                        "diff-add-bg": "rgba(46, 160, 67, 0.15)",
+                        "diff-add-text": "#3fb950",
+                        "diff-del-bg": "rgba(248, 81, 73, 0.15)",
+                        "diff-del-text": "#f85149"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "element-gap": "12px",
+                        "unit": "4px",
+                        "sidebar-width": "260px",
+                        "container-padding": "24px",
+                        "gutter": "16px"
+                    },
+                    fontFamily: {
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-base": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "code-sm": ["JetBrains Mono"],
+                        "code-base": ["JetBrains Mono"],
+                        "body-sm": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-base": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "code-sm": ["11px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "code-base": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-base h-screen overflow-hidden flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="bg-surface-container-low dark:bg-surface-container-low border-b border-outline-variant dark:border-outline-variant fixed top-0 w-full z-50 flex items-center justify-between px-gutter h-14">
+<div class="flex items-center gap-6">
+<span class="font-headline-md text-headline-md font-bold text-on-surface dark:text-on-surface tracking-tight">Bug-to-PR Agent</span>
+<div class="hidden md:flex gap-4">
+<!-- Inactive Nav -->
+<a class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 flex items-center px-2 py-1 rounded" href="#">
+                    Issues
+                </a>
+<!-- Active Nav (Assuming we are viewing a diff from a specific Run) -->
+<a class="font-label-caps text-label-caps text-primary dark:text-primary border-b-2 border-primary pb-[calc(4px+0.5rem)] pt-2 mt-[2px] transition-colors cursor-pointer active:opacity-80 flex items-center px-2" href="#">
+                    Runs
+                </a>
+<!-- Inactive Nav -->
+<a class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 flex items-center px-2 py-1 rounded" href="#">
+                    Benchmarks
+                </a>
+<!-- Inactive Nav -->
+<a class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 flex items-center px-2 py-1 rounded" href="#">
+                    About
+                </a>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dark_mode</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">terminal</span>
+</button>
+<button class="ml-2 px-3 py-1.5 bg-primary text-on-primary font-label-caps text-label-caps rounded-DEFAULT hover:opacity-90 transition-opacity flex items-center gap-2">
+                GitHub
+            </button>
+</div>
+</nav>
+<!-- App Container -->
+<div class="flex flex-1 mt-14 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="bg-surface-container dark:bg-surface-container border-r border-outline-variant dark:border-outline-variant fixed left-0 top-14 bottom-0 w-[260px] flex flex-col z-40">
+<!-- Header -->
+<div class="p-4 border-b border-outline-variant">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-[18px]">account_tree</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md font-black text-primary dark:text-primary leading-none">bug-to-pr-agent</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">v1.4.2-stable</div>
+</div>
+</div>
+<button class="w-full py-2 px-4 bg-primary text-on-primary font-label-caps text-label-caps rounded-DEFAULT hover:opacity-90 transition-opacity shadow-sm">
+                    New Run
+                </button>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 overflow-y-auto py-2">
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-2 font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out cursor-pointer group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:text-on-surface">input</span>
+                    Intake
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out cursor-pointer group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:text-on-surface">settings_suggest</span>
+                    Prep
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out cursor-pointer group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:text-on-surface">location_searching</span>
+                    Localization
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out cursor-pointer group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:text-on-surface">auto_awesome</span>
+                    Generation
+                </a>
+<!-- Active -->
+<a class="flex items-center gap-3 px-4 py-2 font-label-caps text-label-caps bg-secondary-container dark:bg-secondary-container text-on-secondary-container dark:text-on-secondary-container border-l-4 border-primary transition-all duration-150 ease-in-out cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">fact_check</span>
+                    Verification
+                </a>
+</nav>
+<!-- Footer -->
+<div class="p-2 border-t border-outline-variant">
+<a class="flex items-center gap-3 px-4 py-2 font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest rounded transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+                    Logs
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest rounded transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+                    Settings
+                </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-sidebar-width flex-1 flex flex-col w-full h-full bg-surface">
+<!-- Header Section -->
+<header class="px-container-padding py-6 flex items-start justify-between border-b border-outline-variant/50">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface mb-3 flex items-center gap-3">
+                        Generated Fix
+                        <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container font-code-sm text-code-sm rounded-DEFAULT border border-outline-variant/30">Verified</span>
+</h1>
+<div class="flex flex-wrap gap-2 items-center font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-highest rounded border border-outline-variant">
+<span class="material-symbols-outlined text-[14px]">book</span>
+                            repo: django/django
+                        </div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-highest rounded border border-outline-variant">
+<span class="material-symbols-outlined text-[14px]">psychology</span>
+                            model: Sonnet
+                        </div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-highest rounded border border-outline-variant">
+<span class="material-symbols-outlined text-[14px]">replay</span>
+                            attempt: 2
+                        </div>
+</div>
+</div>
+<!-- Toolbar Actions -->
+<div class="flex gap-2">
+<button class="px-3 py-1.5 bg-surface-container-highest border border-outline-variant text-on-surface hover:bg-surface-container-low rounded-DEFAULT font-label-caps text-label-caps flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[16px]">unfold_more</span>
+                        Expand all
+                    </button>
+<button class="px-3 py-1.5 bg-surface-container-highest border border-outline-variant text-on-surface hover:bg-surface-container-low rounded-DEFAULT font-label-caps text-label-caps flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+                        Copy Patch
+                    </button>
+<button class="px-3 py-1.5 bg-primary text-on-primary rounded-DEFAULT font-label-caps text-label-caps flex items-center gap-2 transition-opacity hover:opacity-90 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                        Download .diff
+                    </button>
+</div>
+</header>
+<!-- Diff View Container -->
+<div class="flex flex-1 overflow-hidden p-container-padding gap-element-gap">
+<!-- File List Sidebar (Local to view) -->
+<div class="w-64 bg-surface-container-low border border-outline-variant rounded-lg flex flex-col overflow-hidden">
+<div class="px-4 py-3 border-b border-outline-variant bg-surface-container-highest flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface">Files Changed</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">2 files</span>
+</div>
+<div class="flex-1 overflow-y-auto py-2">
+<!-- File Item 1 (Active) -->
+<div class="px-4 py-2 cursor-pointer bg-secondary-container/30 border-l-2 border-primary hover:bg-surface-container-highest transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-code-sm text-code-sm text-on-surface truncate">src/parser.py</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-code-sm">
+<span class="text-diff-add-text bg-diff-add-bg px-1 rounded-sm">+14</span>
+<span class="text-diff-del-text bg-diff-del-bg px-1 rounded-sm">-6</span>
+</div>
+</div>
+<!-- File Item 2 -->
+<div class="px-4 py-2 cursor-pointer border-l-2 border-transparent hover:bg-surface-container-highest transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-code-sm text-code-sm text-on-surface-variant truncate">src/utils.py</span>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-code-sm">
+<span class="text-diff-add-text bg-diff-add-bg px-1 rounded-sm">+2</span>
+<span class="text-diff-del-text bg-diff-del-bg px-1 rounded-sm">-1</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Diff Area -->
+<div class="flex-1 bg-surface-container border border-outline-variant rounded-lg flex flex-col overflow-hidden">
+<!-- Diff File Header -->
+<div class="px-4 py-2.5 border-b border-outline-variant bg-surface-container-highest flex items-center justify-between sticky top-0 z-10 shadow-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">description</span>
+<span class="font-code-base text-code-base text-on-surface font-semibold">src/parser.py</span>
+</div>
+<div class="font-code-sm text-code-sm flex gap-3 text-on-surface-variant">
+<span>@@ -124,10 +124,18 @@</span>
+<span>20 lines</span>
+</div>
+</div>
+<!-- Code Viewer -->
+<div class="flex-1 overflow-auto font-code-sm text-code-sm leading-[1.6] bg-[#0d1117]">
+<table class="w-full border-collapse border-spacing-0 whitespace-pre">
+<tbody>
+<!-- Context line -->
+<tr class="hover:bg-surface-container-highest/50">
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30">124</td>
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30">124</td>
+<td class="px-4 text-on-surface-variant">    def parse_node(self, node: ast.AST) -&gt; None:</td>
+</tr>
+<!-- Context line -->
+<tr class="hover:bg-surface-container-highest/50">
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30">125</td>
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30">125</td>
+<td class="px-4 text-on-surface-variant">        if isinstance(node, ast.FunctionDef):</td>
+</tr>
+<!-- Deletion (-) -->
+<tr class="bg-diff-del-bg text-diff-del-text">
+<td class="w-[40px] px-2 text-right text-diff-del-text/70 select-none border-r border-outline-variant/30 bg-diff-del-bg">126</td>
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30 bg-diff-del-bg"></td>
+<td class="px-4">-            self.handle_function(node)</td>
+</tr>
+<tr class="bg-diff-del-bg text-diff-del-text">
+<td class="w-[40px] px-2 text-right text-diff-del-text/70 select-none border-r border-outline-variant/30 bg-diff-del-bg">127</td>
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30 bg-diff-del-bg"></td>
+<td class="px-4">-            return</td>
+</tr>
+<!-- Addition (+) -->
+<tr class="bg-diff-add-bg text-diff-add-text">
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30 bg-diff-add-bg"></td>
+<td class="w-[40px] px-2 text-right text-diff-add-text/70 select-none border-r border-outline-variant/30 bg-diff-add-bg">126</td>
+<td class="px-4">+            try:</td>
+</tr>
+<tr class="bg-diff-add-bg text-diff-add-text">
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30 bg-diff-add-bg"></td>
+<td class="w-[40px] px-2 text-right text-diff-add-text/70 select-none border-r border-outline-variant/30 bg-diff-add-bg">127</td>
+<td class="px-4">+                self.handle_function(node)</td>
+</tr>
+<tr class="bg-diff-add-bg text-diff-add-text">
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30 bg-diff-add-bg"></td>
+<td class="w-[40px] px-2 text-right text-diff-add-text/70 select-none border-r border-outline-variant/30 bg-diff-add-bg">128</td>
+<td class="px-4">+                self._record_metric('func_parsed', True)</td>
+</tr>
+<tr class="bg-diff-add-bg text-diff-add-text">
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30 bg-diff-add-bg"></td>
+<td class="w-[40px] px-2 text-right text-diff-add-text/70 select-none border-r border-outline-variant/30 bg-diff-add-bg">129</td>
+<td class="px-4">+            except ParseError as e:</td>
+</tr>
+<tr class="bg-diff-add-bg text-diff-add-text">
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30 bg-diff-add-bg"></td>
+<td class="w-[40px] px-2 text-right text-diff-add-text/70 select-none border-r border-outline-variant/30 bg-diff-add-bg">130</td>
+<td class="px-4">+                logger.warning(f"Skipping malformed function: {e}")</td>
+</tr>
+<tr class="bg-diff-add-bg text-diff-add-text">
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30 bg-diff-add-bg"></td>
+<td class="w-[40px] px-2 text-right text-diff-add-text/70 select-none border-r border-outline-variant/30 bg-diff-add-bg">131</td>
+<td class="px-4">+            return</td>
+</tr>
+<!-- Context line -->
+<tr class="hover:bg-surface-container-highest/50">
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30">128</td>
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30">132</td>
+<td class="px-4 text-on-surface-variant"> </td>
+</tr>
+<tr class="hover:bg-surface-container-highest/50">
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30">129</td>
+<td class="w-[40px] px-2 text-right text-outline select-none border-r border-outline-variant/30">133</td>
+<td class="px-4 text-on-surface-variant">        for child in ast.iter_child_nodes(node):</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

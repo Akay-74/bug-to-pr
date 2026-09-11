@@ -1,0 +1,27 @@
+{
+  "issue_id": "scikit-learn__scikit-learn-14053",
+  "issue_url": "https://github.com/scikit-learn/scikit-learn/pull/14053",
+  "repo": "scikit-learn/scikit-learn",
+  "base_commit": "6ab8c86c383dd847a1be7103ad115f174fe23ffd",
+  "python_version": "3.6",
+  "docker_image": "bug2pr-sandbox:py36-build",
+  "install_command": "python -m pip install \"cython<3\" numpy==1.19.2 setuptools scipy==1.5.2 pytest pandas matplotlib && python -m pip install -v --no-use-pep517 --no-build-isolation -e .",
+  "regression_test_command": "pytest -rA sklearn/tree/tests/test_export.py::test_export_text",
+  "regression_test_ids": [
+    "sklearn/tree/tests/test_export.py::test_export_text"
+  ],
+  "relevant_test_command": "pytest -rA sklearn/tree/tests/test_export.py::test_export_text sklearn/tree/tests/test_export.py::test_export_text_errors sklearn/tree/tests/test_export.py::test_friedman_mse_in_graphviz sklearn/tree/tests/test_export.py::test_graphviz_errors sklearn/tree/tests/test_export.py::test_graphviz_toy sklearn/tree/tests/test_export.py::test_precision",
+  "full_test_command": "pytest -rA",
+  "protected_test_paths": [
+    "sklearn/tree/tests/test_export.py"
+  ],
+  "baseline_failures": [
+    {
+      "test_id": "sklearn/tree/tests/test_export.py::test_export_text",
+      "exit_code": 1,
+      "stdout": "=========================\nplatform linux -- Python 3.6.15, pytest-7.0.1, pluggy-1.0.0\nrootdir: /workspace, configfile: setup.cfg\ncollected 1 item\n\nsklearn/tree/tests/test_export.py F                                      [100%]\n\n=================================== FAILURES ===================================\n_______________________________ test_export_text _______________________________\n\n    def test_export_text():\n        clf = DecisionTreeClassifier(max_depth=2, random_state=0)\n        clf.fit(X, y)\n    \n        expected_report = dedent(\"\"\"\n        |--- feature_1 <= 0.00\n        |   |--- class: -1\n        |--- feature_1 >  0.00\n        |   |--- class: 1\n        \"\"\").lstrip()\n    \n        assert export_text(clf) == expected_report\n        # testing that leaves at level 1 are not truncated\n        assert export_text(clf, max_depth=0) == expected_report\n        # testing that the rest of the tree is truncated\n        assert export_text(clf, max_depth=10) == expected_report\n    \n        expected_report = dedent(\"\"\"\n        |--- b <= 0.00\n        |   |--- class: -1\n        |--- b >  0.00\n        |   |--- class: 1\n        \"\"\").lstrip()\n        assert export_text(clf, feature_names=['a', 'b']) == expected_report\n    \n        expected_report = dedent(\"\"\"\n        |--- feature_1 <= 0.00\n        |   |--- weights: [3.00, 0.00] class: -1\n        |--- feature_1 >  0.00\n        |   |--- weights: [0.00, 3.00] class: 1\n        \"\"\").lstrip()\n        assert export_text(clf, show_weights=True) == expected_report\n    \n        expected_report = dedent(\"\"\"\n        |- feature_1 <= 0.00\n        | |- class: -1\n        |- feature_1 >  0.00\n        | |- class: 1\n        \"\"\").lstrip()\n        assert export_text(clf, spacing=1) == expected_report\n    \n        X_l = [[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1], [-1, 1]]\n        y_l = [-1, -1, -1, 1, 1, 1, 2]\n        clf = DecisionTreeClassifier(max_depth=4, random_state=0)\n        clf.fit(X_l, y_l)\n        expected_report = dedent(\"\"\"\n        |--- feature_1 <= 0.00\n        |   |--- class: -1\n        |--- feature_1 >  0.00\n        |   |--- truncated branch of depth 2\n        \"\"\").lstrip()\n        assert export_text(clf, max_depth=0) == expected_report\n    \n        X_mo = [[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]]\n        y_mo = [[-1, -1], [-1, -1], [-1, -1], [1, 1], [1, 1], [1, 1]]\n    \n        reg = DecisionTreeRegressor(max_depth=2, random_state=0)\n        reg.fit(X_mo, y_mo)\n    \n        expected_report = dedent(\"\"\"\n        |--- feature_1 <= 0.0\n        |   |--- value: [-1.0, -1.0]\n        |--- feature_1 >  0.0\n        |   |--- value: [1.0, 1.0]\n        \"\"\").lstrip()\n        assert export_text(reg, decimals=1) == expected_report\n        assert export_text(reg, decimals=1, show_weights=True) == expected_report\n    \n        X_single = [[-2], [-1], [-1], [1], [1], [2]]\n        reg = DecisionTreeRegressor(max_depth=2, random_state=0)\n        reg.fit(X_single, y_mo)\n    \n        expected_report = dedent(\"\"\"\n        |--- first <= 0.0\n        |   |--- value: [-1.0, -1.0]\n        |--- first >  0.0\n        |   |--- value: [1.0, 1.0]\n        \"\"\").lstrip()\n>       assert export_text(reg, decimals=1,\n                           feature_names=['first']) == expected_report\n\nsklearn/tree/tests/test_export.py:409: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \nsklearn/tree/export.py:893: in export_text\n    feature_names_ = [feature_names[i] for i in tree_.feature]\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n.0 = <iterator object at 0x7f17a46af4e0>\n\n>   feature_names_ = [feature_names[i] for i in tree_.feature]\nE   IndexError: list index out of range\n\nsklearn/tree/export.py:893: IndexError\n=========================== short test summary info ============================\nFAILED sklearn/tree/tests/test_export.py::test_export_text - IndexError: list...\n========================= 1 failed, 1 warning in 0.30s =========================\n",
+      "stderr": ""
+    }
+  ],
+  "validation_status": "valid"
+}

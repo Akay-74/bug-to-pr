@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Would-Be Pull Request - Bug-to-PR Agent</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "secondary": "#bcc7de",
+                    "background": "#0b1326",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "on-error-container": "#ffdad6",
+                    "tertiary-container": "#d97721",
+                    "on-background": "#dae2fd",
+                    "primary-container": "#8083ff",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "surface-bright": "#31394d",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "on-tertiary": "#4f2500",
+                    "outline-variant": "#464554",
+                    "on-surface": "#dae2fd",
+                    "secondary-fixed": "#d8e3fb",
+                    "primary-fixed": "#e1e0ff",
+                    "on-error": "#690005",
+                    "on-primary-fixed": "#07006c",
+                    "inverse-primary": "#494bd6",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "surface-container-highest": "#2d3449",
+                    "surface-container-low": "#131b2e",
+                    "surface-variant": "#2d3449",
+                    "error-container": "#93000a",
+                    "secondary-container": "#3e495d",
+                    "error": "#ffb4ab",
+                    "surface": "#0b1326",
+                    "surface-tint": "#c0c1ff",
+                    "inverse-on-surface": "#283044",
+                    "surface-container": "#171f33",
+                    "on-tertiary-fixed": "#301400",
+                    "tertiary-fixed": "#ffdcc5",
+                    "on-secondary": "#263143",
+                    "surface-container-high": "#222a3d",
+                    "surface-container-lowest": "#060e20",
+                    "on-tertiary-container": "#452000",
+                    "surface-dim": "#0b1326",
+                    "inverse-surface": "#dae2fd",
+                    "tertiary": "#ffb783",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "on-secondary-fixed": "#111c2d",
+                    "outline": "#908fa0",
+                    "primary": "#c0c1ff",
+                    "on-secondary-container": "#aeb9d0",
+                    "on-primary": "#1000a9",
+                    "on-surface-variant": "#c7c4d7",
+                    "on-primary-container": "#0d0096"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "element-gap": "12px",
+                    "unit": "4px",
+                    "sidebar-width": "260px",
+                    "container-padding": "24px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter", "sans-serif"],
+                    "display-lg": ["Inter", "sans-serif"],
+                    "body-base": ["Inter", "sans-serif"],
+                    "label-caps": ["Inter", "sans-serif"],
+                    "code-sm": ["JetBrains Mono", "monospace"],
+                    "code-base": ["JetBrains Mono", "monospace"],
+                    "body-sm": ["Inter", "sans-serif"]
+            },
+            "fontSize": {
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-base": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "code-base": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Custom scrollbar for dense panels */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #464554; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #908fa0; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="bg-surface-container-low dark:bg-surface-container-low docked full-width top-0 border-b border-outline-variant dark:border-outline-variant flat no shadows fixed top-0 w-full z-50 flex items-center justify-between px-gutter h-14">
+<!-- Left: Search/Brand -->
+<div class="flex items-center gap-6 h-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">pest_control</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface dark:text-on-surface tracking-tight">Bug-to-PR Agent</span>
+</div>
+<div class="hidden lg:flex items-center bg-background border border-outline-variant rounded-md px-3 py-1.5 focus-within:border-primary transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+<input class="bg-transparent border-none outline-none text-body-sm font-body-sm text-on-surface placeholder:text-on-surface-variant w-48 focus:ring-0 p-0" placeholder="Search resources..." type="text"/>
+<div class="flex gap-1 ml-2">
+<kbd class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container px-1.5 rounded border border-outline-variant">⌘</kbd>
+<kbd class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container px-1.5 rounded border border-outline-variant">K</kbd>
+</div>
+</div>
+</div>
+<!-- Center: Navigation Links (Hidden on small screens to prioritize space) -->
+<nav class="hidden md:flex items-end h-full gap-8">
+<a class="h-full flex items-center pt-1 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 px-2 font-body-base text-body-base" href="#">Issues</a>
+<a class="h-full flex items-center pt-1 text-primary dark:text-primary border-b-2 border-primary pb-[2px] transition-colors cursor-pointer active:opacity-80 px-2 font-body-base text-body-base" href="#">Runs</a>
+<a class="h-full flex items-center pt-1 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 px-2 font-body-base text-body-base" href="#">Benchmarks</a>
+<a class="h-full flex items-center pt-1 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 px-2 font-body-base text-body-base" href="#">About</a>
+</nav>
+<!-- Right: Actions -->
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest rounded-lg transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest rounded-lg transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined">terminal</span>
+</button>
+<div class="w-px h-6 bg-outline-variant mx-2"></div>
+<button class="flex items-center gap-2 bg-inverse-surface text-inverse-on-surface px-3 py-1.5 rounded-md hover:opacity-90 transition-opacity font-body-sm text-body-sm font-medium">
+<span class="material-symbols-outlined text-[18px]">code</span>
+                GitHub
+            </button>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="hidden md:flex bg-surface-container dark:bg-surface-container docked left-0 h-full w-sidebar-width border-r border-outline-variant dark:border-outline-variant flat no shadows fixed left-0 top-14 bottom-0 w-[260px] flex-col z-40">
+<!-- Header / Project Switcher -->
+<div class="p-4 border-b border-outline-variant flex items-center justify-between hover:bg-surface-container-highest cursor-pointer transition-colors">
+<div class="flex items-center gap-3 overflow-hidden">
+<div class="w-8 h-8 rounded bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 font-bold">
+                    B
+                </div>
+<div class="flex flex-col truncate">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface truncate">bug-to-pr-agent</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant truncate">v1.4.2-stable</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">unfold_more</span>
+</div>
+<!-- CTA -->
+<div class="p-4">
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-2 px-4 rounded-md font-body-sm text-body-sm font-medium hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Run
+            </button>
+</div>
+<!-- Main Navigation Tabs -->
+<nav class="flex-1 overflow-y-auto py-2 px-2 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface">input</span>
+<span class="font-body-sm text-body-sm font-medium">Intake</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface">settings_suggest</span>
+<span class="font-body-sm text-body-sm font-medium">Prep</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface">location_searching</span>
+<span class="font-body-sm text-body-sm font-medium">Localization</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface">auto_awesome</span>
+<span class="font-body-sm text-body-sm font-medium">Generation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md bg-secondary-container dark:bg-secondary-container text-on-secondary-container dark:text-on-secondary-container border-l-4 border-primary transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined icon-fill text-primary">fact_check</span>
+<span class="font-body-sm text-body-sm font-medium">Verification</span>
+</a>
+</nav>
+<!-- Footer Navigation -->
+<div class="mt-auto p-2 border-t border-outline-variant flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface text-[20px]">terminal</span>
+<span class="font-body-sm text-body-sm font-medium">Logs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface text-[20px]">settings</span>
+<span class="font-body-sm text-body-sm font-medium">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-sidebar-width pt-14 min-h-screen">
+<div class="max-w-6xl mx-auto p-container-padding flex flex-col gap-6">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<h1 class="font-display-lg text-display-lg text-on-surface">Would-Be Pull Request</h1>
+<span class="bg-surface-container-high text-on-surface-variant border border-outline-variant font-label-caps text-label-caps px-2 py-1 rounded-md flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]">edit_note</span>
+                        DRAFT PR #842
+                    </span>
+</div>
+<!-- Action Cluster Top Right -->
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 rounded-md border border-outline-variant text-on-surface hover:bg-surface-container-highest transition-colors font-body-sm text-body-sm font-medium">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+                        Copy PR Description
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-on-primary hover:opacity-90 transition-opacity shadow-sm font-body-sm text-body-sm font-medium">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                        View Patch
+                    </button>
+</div>
+</div>
+<!-- Context Banner (Glassy / Informational) -->
+<div class="bg-secondary-container/50 border border-secondary/30 backdrop-blur-sm rounded-lg p-4 flex items-start gap-3 shadow-sm">
+<span class="material-symbols-outlined text-secondary mt-0.5 icon-fill">info</span>
+<div>
+<h3 class="font-body-base text-body-base font-semibold text-on-surface">Public demo environment</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Public demo — no GitHub changes were made. This is a preview of the pull request that the agent would have submitted in a production environment.</p>
+</div>
+</div>
+<!-- Bento-style Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- Main PR Content Area (Spans 8 columns on desktop) -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- PR Details Card -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col">
+<!-- Card Header -->
+<div class="bg-surface-container-lowest p-6 border-b border-outline-variant flex flex-col gap-2 relative overflow-hidden">
+<!-- Subtle tech accent line -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-transparent"></div>
+<div class="flex items-center gap-2 text-primary font-code-sm text-code-sm mb-2">
+<span class="material-symbols-outlined text-[16px]">merge_type</span>
+                                main <span class="text-outline">←</span> bugfix/parser-nested-tags
+                            </div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Fix: Parser fails when handling nested template tags</h2>
+</div>
+<!-- Card Body (Markdown Simulation) -->
+<div class="p-6 text-on-surface font-body-base text-body-base flex flex-col gap-4">
+<p class="text-on-surface-variant leading-relaxed">
+                                Resolves <a class="text-primary hover:underline font-code-base" href="#">Issue #841</a>.
+                            </p>
+<h3 class="font-semibold text-on-surface mt-4 border-b border-outline-variant pb-2">Root Cause Analysis</h3>
+<p class="leading-relaxed">
+                                The recursive descent parser in <code>src/parser/html.ts</code> was incorrectly maintaining state when encountering deeply nested custom template tags. Specifically, the token stack was not being popped correctly upon encountering closing tags that matched an ambiguous pattern regex, leading to a stack overflow or malformed AST.
+                            </p>
+<h3 class="font-semibold text-on-surface mt-4 border-b border-outline-variant pb-2">Changes Proposed</h3>
+<ul class="list-disc pl-5 space-y-2 text-on-surface-variant">
+<li>Updated <code>parseNode()</code> to strictly validate closing tag boundaries against the current context depth.</li>
+<li>Introduced a dedicated <code>TemplateTagState</code> interface to replace the loose tuple structure.</li>
+<li>Added boundary checks in the tokenizer to prevent runaway lookaheads on invalid HTML.</li>
+</ul>
+<h3 class="font-semibold text-on-surface mt-4 border-b border-outline-variant pb-2">Code Snippet (Before vs After)</h3>
+<div class="bg-background rounded-lg border border-outline-variant overflow-hidden font-code-sm text-code-sm">
+<div class="bg-surface-container-highest px-4 py-2 border-b border-outline-variant flex items-center justify-between text-on-surface-variant">
+<span>src/parser/html.ts</span>
+</div>
+<div class="p-4 overflow-x-auto whitespace-pre">
+<span class="text-error">- if (node.type === 'Template' &amp;&amp; state.depth &gt; 1) {</span>
+<span class="text-error">-   stack.push(node);</span>
+<span class="text-error">- }</span>
+<span class="text-primary">+ if (node.type === 'Template') {</span>
+<span class="text-primary">+   if (state.depth &gt;= MAX_TEMPLATE_DEPTH) throw new ParseError(...);</span>
+<span class="text-primary">+   context.enter(node);</span>
+<span class="text-primary">+ }</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar Metadata Area (Spans 4 columns on desktop) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Verification Checklist Card -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-5 shadow-sm">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary">verified</span>
+<h3 class="font-headline-md text-headline-md text-on-surface text-[16px]">Verification Checklist</h3>
+</div>
+<div class="flex flex-col gap-3">
+<div class="flex items-start gap-3 bg-surface-container-lowest p-3 rounded border border-outline-variant/50">
+<span class="material-symbols-outlined text-[#4ade80] icon-fill text-[20px] mt-0.5 shrink-0">check_circle</span>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-medium text-on-surface">Regression test passed</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">tests/parser/regression.spec.ts</span>
+</div>
+</div>
+<div class="flex items-start gap-3 bg-surface-container-lowest p-3 rounded border border-outline-variant/50">
+<span class="material-symbols-outlined text-[#4ade80] icon-fill text-[20px] mt-0.5 shrink-0">check_circle</span>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-medium text-on-surface">Relevant tests passed</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">14/14 suites</span>
+</div>
+</div>
+<div class="flex items-start gap-3 bg-surface-container-lowest p-3 rounded border border-outline-variant/50">
+<span class="material-symbols-outlined text-[#4ade80] icon-fill text-[20px] mt-0.5 shrink-0">check_circle</span>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-medium text-on-surface">No new failures introduced</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Coverage stable at 94.2%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Agent Metadata Card -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-5 shadow-sm">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-on-surface-variant">smart_toy</span>
+<h3 class="font-headline-md text-headline-md text-on-surface text-[16px]">Agent Metadata</h3>
+</div>
+<div class="grid grid-cols-2 gap-y-4 gap-x-2">
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MODEL</span>
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface bg-surface-container-lowest px-2 py-1 rounded border border-outline-variant w-max">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                                    Sonnet 3.5
+                                </div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant">ATTEMPTS</span>
+<div class="font-code-sm text-code-sm text-on-surface">
+                                    2
+                                </div>
+</div>
+<div class="flex flex-col gap-1 col-span-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">COMPUTATION COST</span>
+<div class="font-code-base text-code-base text-on-surface flex items-center gap-2">
+                                    $0.21 USD
+                                    <span class="text-on-surface-variant text-[10px] bg-surface-container-highest px-1.5 rounded">ESTIMATED</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/50">
+<a class="font-body-sm text-body-sm text-primary hover:underline flex items-center gap-1" href="#">
+                                View full generation logs
+                                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

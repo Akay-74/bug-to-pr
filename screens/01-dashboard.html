@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bug-to-PR Agent - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#2f2ebe",
+                      "secondary": "#bcc7de",
+                      "background": "#0b1326",
+                      "tertiary-fixed-dim": "#ffb783",
+                      "on-error-container": "#ffdad6",
+                      "tertiary-container": "#d97721",
+                      "on-background": "#dae2fd",
+                      "primary-container": "#8083ff",
+                      "secondary-fixed-dim": "#bcc7de",
+                      "surface-bright": "#31394d",
+                      "on-secondary-fixed-variant": "#3c475a",
+                      "on-tertiary": "#4f2500",
+                      "outline-variant": "#464554",
+                      "on-surface": "#dae2fd",
+                      "secondary-fixed": "#d8e3fb",
+                      "primary-fixed": "#e1e0ff",
+                      "on-error": "#690005",
+                      "on-primary-fixed": "#07006c",
+                      "inverse-primary": "#494bd6",
+                      "primary-fixed-dim": "#c0c1ff",
+                      "surface-container-highest": "#2d3449",
+                      "surface-container-low": "#131b2e",
+                      "surface-variant": "#2d3449",
+                      "error-container": "#93000a",
+                      "secondary-container": "#3e495d",
+                      "error": "#ffb4ab",
+                      "surface": "#0b1326",
+                      "surface-tint": "#c0c1ff",
+                      "inverse-on-surface": "#283044",
+                      "surface-container": "#171f33",
+                      "on-tertiary-fixed": "#301400",
+                      "tertiary-fixed": "#ffdcc5",
+                      "on-secondary": "#263143",
+                      "surface-container-high": "#222a3d",
+                      "surface-container-lowest": "#060e20",
+                      "on-tertiary-container": "#452000",
+                      "surface-dim": "#0b1326",
+                      "inverse-surface": "#dae2fd",
+                      "tertiary": "#ffb783",
+                      "on-tertiary-fixed-variant": "#703700",
+                      "on-secondary-fixed": "#111c2d",
+                      "outline": "#908fa0",
+                      "primary": "#c0c1ff",
+                      "on-secondary-container": "#aeb9d0",
+                      "on-primary": "#1000a9",
+                      "on-surface-variant": "#c7c4d7",
+                      "on-primary-container": "#0d0096"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "element-gap": "12px",
+                      "unit": "4px",
+                      "sidebar-width": "260px",
+                      "container-padding": "24px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "body-base": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "code-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "code-base": [
+                              "JetBrains Mono"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-base": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "code-sm": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "code-base": [
+                              "13px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-base min-h-screen">
+<!-- TopNavBar Shell (Web) -->
+<nav class="hidden md:flex fixed top-0 w-full z-50 items-center justify-between px-gutter h-14 bg-surface-container-low border-b border-outline-variant">
+<div class="flex items-center gap-container-padding">
+<!-- Brand Logo -->
+<div class="font-headline-md text-headline-md font-bold text-on-surface">Bug-to-PR Agent</div>
+<!-- Navigation Links -->
+<div class="flex gap-gutter h-full items-end">
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-primary pb-2 transition-colors" href="#">Issues</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-highest transition-colors pb-2 cursor-pointer active:opacity-80 transition-all" href="#">Runs</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-highest transition-colors pb-2 cursor-pointer active:opacity-80 transition-all" href="#">Benchmarks</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-highest transition-colors pb-2 cursor-pointer active:opacity-80 transition-all" href="#">About</a>
+</div>
+</div>
+<div class="flex items-center gap-element-gap">
+<button class="text-on-surface-variant hover:bg-surface-container-highest p-1 rounded transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-highest p-1 rounded transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</button>
+<button class="font-label-caps text-label-caps bg-[#1000a9] text-[#e1e0ff] px-4 py-1.5 rounded transition-colors border border-outline hover:opacity-90">
+                GitHub
+            </button>
+</div>
+</nav>
+<!-- SideNavBar (Mobile) -->
+<nav class="md:hidden fixed left-0 top-0 h-full w-[260px] flex flex-col z-40 bg-surface-container border-r border-outline-variant transition-transform transform -translate-x-full">
+<!-- Mobile nav content would go here, simplified for this layout focus -->
+</nav>
+<!-- Main Canvas -->
+<main class="md:ml-0 md:mt-14 p-container-padding max-w-7xl mx-auto">
+<!-- Header Section -->
+<header class="mb-8">
+<h1 class="font-display-lg text-display-lg text-primary mb-2">Turn real GitHub bugs into verified fixes.</h1>
+<p class="font-body-base text-body-base text-on-surface-variant">Select a curated issue and inspect what the agent found, changed, and verified.</p>
+</header>
+<!-- Summary Bar (Bento-style metrics) -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-element-gap mb-8">
+<div class="bg-surface-container-high p-4 rounded border border-outline-variant">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-1">Issues Evaluated</div>
+<div class="font-headline-md text-headline-md">452</div>
+</div>
+<div class="bg-surface-container-high p-4 rounded border border-outline-variant">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-1">Verified Fixes</div>
+<div class="font-headline-md text-headline-md text-[#c0c1ff]">312</div>
+</div>
+<div class="bg-surface-container-high p-4 rounded border border-outline-variant">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-1">Avg Attempts</div>
+<div class="font-headline-md text-headline-md">1.8</div>
+</div>
+<div class="bg-surface-container-high p-4 rounded border border-outline-variant">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-1">Avg Cost</div>
+<div class="font-headline-md text-headline-md">$0.14</div>
+</div>
+<div class="bg-surface-container-high p-4 rounded border border-outline-variant col-span-2 md:col-span-1">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-1">Best Model</div>
+<div class="font-headline-md text-headline-md text-tertiary-fixed-dim">GPT-4o</div>
+</div>
+</div>
+<!-- Issue Selector Section -->
+<section class="bg-surface-container p-6 rounded border border-outline-variant">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md">Issue Selection</h2>
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-2 top-1.5 text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="w-full bg-[#060e20] border border-outline-variant rounded pl-8 pr-3 py-1.5 font-code-sm text-code-sm text-on-surface focus:outline-none focus:border-[#494bd6]" placeholder="Search issues..." type="text"/>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant">
+<th class="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant">Repository</th>
+<th class="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant">#</th>
+<th class="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant">Title</th>
+<th class="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant">Difficulty</th>
+<th class="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant">Model</th>
+<th class="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant">Status</th>
+<th class="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant">Attempts</th>
+<th class="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-code-sm text-code-sm">
+<!-- Row 1 -->
+<tr class="border-b border-surface-container-high hover:bg-surface-container-highest transition-colors group">
+<td class="py-3 px-3">django/django</td>
+<td class="py-3 px-3 text-on-surface-variant">14382</td>
+<td class="py-3 px-3 font-body-sm text-body-sm truncate max-w-xs">Fix QuerySet.exists() with distinct()</td>
+<td class="py-3 px-3"><span class="bg-[#3e495d] text-[#c0c1ff] px-2 py-0.5 rounded text-[10px]">Medium</span></td>
+<td class="py-3 px-3">Sonnet</td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-1 bg-[#131b2e] border border-[#2d3449] px-2 py-0.5 rounded text-[10px] text-[#8083ff]">
+<span class="material-symbols-outlined text-[12px]" data-icon="verified">verified</span>
+                                    VERIFIED
+                                </div>
+</td>
+<td class="py-3 px-3">2</td>
+<td class="py-3 px-3 text-right">
+<div class="flex justify-end gap-2">
+<button class="text-xs bg-[#494bd6] text-white px-3 py-1 rounded hover:bg-[#8083ff] transition-colors">View Result</button>
+<button class="text-xs border border-[#464554] text-[#bcc7de] px-3 py-1 rounded hover:bg-[#2d3449] transition-colors">View Issue</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-surface-container-high hover:bg-surface-container-highest transition-colors group">
+<td class="py-3 px-3">pandas-dev/pandas</td>
+<td class="py-3 px-3 text-on-surface-variant">54291</td>
+<td class="py-3 px-3 font-body-sm text-body-sm truncate max-w-xs">DataFrame.merge fails with multi-index</td>
+<td class="py-3 px-3"><span class="bg-[#3e495d] text-[#ffb783] px-2 py-0.5 rounded text-[10px]">Hard</span></td>
+<td class="py-3 px-3">GPT-4o</td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-1 bg-[#131b2e] border border-[#2d3449] px-2 py-0.5 rounded text-[10px] text-[#8083ff]">
+<span class="material-symbols-outlined text-[12px]" data-icon="verified">verified</span>
+                                    VERIFIED
+                                </div>
+</td>
+<td class="py-3 px-3">4</td>
+<td class="py-3 px-3 text-right">
+<div class="flex justify-end gap-2">
+<button class="text-xs bg-[#494bd6] text-white px-3 py-1 rounded hover:bg-[#8083ff] transition-colors">View Result</button>
+<button class="text-xs border border-[#464554] text-[#bcc7de] px-3 py-1 rounded hover:bg-[#2d3449] transition-colors">View Issue</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-surface-container-high hover:bg-surface-container-highest transition-colors group">
+<td class="py-3 px-3">matplotlib/matplotlib</td>
+<td class="py-3 px-3 text-on-surface-variant">25870</td>
+<td class="py-3 px-3 font-body-sm text-body-sm truncate max-w-xs">Incorrect clipping in polar plots</td>
+<td class="py-3 px-3"><span class="bg-[#3e495d] text-[#dae2fd] px-2 py-0.5 rounded text-[10px]">Easy</span></td>
+<td class="py-3 px-3">Sonnet</td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-1 bg-[#131b2e] border border-[#2d3449] px-2 py-0.5 rounded text-[10px] text-[#ffb4ab]">
+<span class="material-symbols-outlined text-[12px]" data-icon="error">error</span>
+                                    FAILED
+                                </div>
+</td>
+<td class="py-3 px-3">1</td>
+<td class="py-3 px-3 text-right">
+<div class="flex justify-end gap-2">
+<button class="text-xs bg-[#494bd6] text-white px-3 py-1 rounded hover:bg-[#8083ff] transition-colors">View Result</button>
+<button class="text-xs border border-[#464554] text-[#bcc7de] px-3 py-1 rounded hover:bg-[#2d3449] transition-colors">View Issue</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-4 flex items-center justify-between text-xs text-on-surface-variant">
+<div>Showing 3 of 452 issues</div>
+<div class="flex gap-1 items-center bg-[#131b2e] border border-[#2d3449] px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px]" data-icon="database">database</span>
+                    CACHED VERIFIED RESULT
+                </div>
+</div>
+</section>
+</main>
+</body></html>

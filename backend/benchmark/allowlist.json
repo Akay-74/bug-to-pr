@@ -1,0 +1,12 @@
+{
+  "repositories": [
+    "sympy/sympy",
+    "scikit-learn/scikit-learn",
+    "pydata/xarray",
+    "django/django",
+    "matplotlib/matplotlib",
+    "astropy/astropy",
+    "pylint-dev/pylint",
+    "fixture/tiny-repo"
+  ]
+}

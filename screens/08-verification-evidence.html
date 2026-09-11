@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bug-to-PR Agent - Verification Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "secondary": "#bcc7de",
+                        "background": "#0b1326",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-container": "#d97721",
+                        "on-background": "#dae2fd",
+                        "primary-container": "#8083ff",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "surface-bright": "#31394d",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "on-tertiary": "#4f2500",
+                        "outline-variant": "#464554",
+                        "on-surface": "#dae2fd",
+                        "secondary-fixed": "#d8e3fb",
+                        "primary-fixed": "#e1e0ff",
+                        "on-error": "#690005",
+                        "on-primary-fixed": "#07006c",
+                        "inverse-primary": "#494bd6",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "surface-container-highest": "#2d3449",
+                        "surface-container-low": "#131b2e",
+                        "surface-variant": "#2d3449",
+                        "error-container": "#93000a",
+                        "secondary-container": "#3e495d",
+                        "error": "#ffb4ab",
+                        "surface": "#0b1326",
+                        "surface-tint": "#c0c1ff",
+                        "inverse-on-surface": "#283044",
+                        "surface-container": "#171f33",
+                        "on-tertiary-fixed": "#301400",
+                        "tertiary-fixed": "#ffdcc5",
+                        "on-secondary": "#263143",
+                        "surface-container-high": "#222a3d",
+                        "surface-container-lowest": "#060e20",
+                        "on-tertiary-container": "#452000",
+                        "surface-dim": "#0b1326",
+                        "inverse-surface": "#dae2fd",
+                        "tertiary": "#ffb783",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "on-secondary-fixed": "#111c2d",
+                        "outline": "#908fa0",
+                        "primary": "#c0c1ff",
+                        "on-secondary-container": "#aeb9d0",
+                        "on-primary": "#1000a9",
+                        "on-surface-variant": "#c7c4d7",
+                        "on-primary-container": "#0d0096",
+                        
+                        // Custom palette for specific states
+                        "success": "#a3e635", // Lime 400 for intense success state in dark mode
+                        "success-bg": "#365314", // Lime 900
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "element-gap": "12px",
+                        "unit": "4px",
+                        "sidebar-width": "260px",
+                        "container-padding": "24px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-base": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "code-sm": ["JetBrains Mono"],
+                        "code-base": ["JetBrains Mono"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-base": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "code-sm": ["11px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "code-base": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #020617; /* Slate-950 */
+            color: #dae2fd; /* on-surface */
+        }
+        /* Custom scrollbar for terminal */
+        .terminal-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .terminal-scroll::-webkit-scrollbar-track {
+            background: #020617; 
+        }
+        .terminal-scroll::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        .terminal-scroll::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-body-base text-body-base">
+<!-- TopNavBar -->
+<header class="bg-surface-container-low border-b border-outline-variant fixed top-0 w-full z-50 flex items-center justify-between px-gutter h-14">
+<div class="flex items-center gap-6 h-full">
+<span class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">Bug-to-PR Agent</span>
+<nav class="hidden md:flex items-center h-full gap-6 ml-4">
+<a class="h-full flex items-center text-on-surface-variant hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 transition-all font-label-caps text-label-caps px-2" href="#">Issues</a>
+<a class="h-full flex items-center text-on-surface-variant hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 transition-all font-label-caps text-label-caps px-2" href="#">Runs</a>
+<a class="h-full flex items-center text-on-surface-variant hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 transition-all font-label-caps text-label-caps px-2" href="#">Benchmarks</a>
+<a class="h-full flex items-center text-on-surface-variant hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 transition-all font-label-caps text-label-caps px-2" href="#">About</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-container-highest p-1.5 rounded-DEFAULT transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dark_mode</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-highest p-1.5 rounded-DEFAULT transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">terminal</span>
+</button>
+<button class="bg-primary text-on-primary font-label-caps text-label-caps px-4 py-1.5 rounded-DEFAULT hover:bg-primary-fixed-dim transition-colors flex items-center gap-2">
+                GitHub
+            </button>
+</div>
+</header>
+<div class="flex flex-1 pt-14">
+<!-- SideNavBar -->
+<aside class="bg-surface-container border-r border-outline-variant fixed left-0 top-14 bottom-0 w-sidebar-width flex flex-col z-40 hidden md:flex">
+<div class="p-4 border-b border-outline-variant flex items-center gap-3">
+<div class="w-10 h-10 rounded-DEFAULT bg-surface-container-highest border border-outline-variant flex items-center justify-center overflow-hidden shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant">folder_copy</span>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="font-label-caps text-label-caps text-on-surface truncate">bug-to-pr-agent</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">v1.4.2-stable</span>
+</div>
+</div>
+<div class="p-4">
+<button class="w-full bg-primary text-on-primary font-label-caps text-label-caps py-2 rounded-DEFAULT flex items-center justify-center gap-2 hover:bg-primary-fixed-dim transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    New Run
+                </button>
+</div>
+<nav class="flex-1 overflow-y-auto py-2 flex flex-col gap-1 px-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]">input</span>
+                    Intake
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]">settings_suggest</span>
+                    Prep
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]">location_searching</span>
+                    Localization
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                    Generation
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container border-l-4 border-primary rounded-r-DEFAULT transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]">fact_check</span>
+                    Verification
+                </a>
+</nav>
+<div class="border-t border-outline-variant p-2 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+                    Logs
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+                    Settings
+                </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-sidebar-width p-container-padding bg-[#0f172a] min-h-[calc(100vh-56px)]"> <!-- Slate-900 surface -->
+<div class="max-w-4xl mx-auto space-y-6">
+<!-- Page Header -->
+<div class="flex items-center justify-between border-b border-outline-variant pb-4">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface">Verification Evidence</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Automated test validation results for PR generation.</p>
+</div>
+<div class="flex items-center gap-2 bg-success-bg border border-success/30 px-3 py-1.5 rounded-DEFAULT">
+<span class="material-symbols-outlined text-success text-[16px]">check_circle</span>
+<span class="font-label-caps text-label-caps text-success">VERIFIED</span>
+</div>
+</div>
+<!-- Bento Grid Layout for Evidence Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- 1. Regression Test -->
+<div class="md:col-span-2 bg-[#1e293b] border border-[#334155] rounded-DEFAULT flex flex-col overflow-hidden">
+<div class="px-4 py-3 border-b border-[#334155] flex justify-between items-center bg-[#0f172a]/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">bug_report</span>
+<h2 class="font-label-caps text-label-caps text-on-surface">Regression Test</h2>
+</div>
+<span class="bg-success-bg text-success border border-success/30 px-2 py-0.5 rounded-sm font-code-sm text-code-sm">PASS</span>
+</div>
+<div class="p-4 space-y-4">
+<div class="flex items-center gap-4 text-sm font-code-base text-code-base">
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">Before:</span>
+<span class="text-error bg-error-container/30 px-1.5 py-0.5 rounded-sm border border-error/20">FAIL</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">arrow_right_alt</span>
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">After:</span>
+<span class="text-success bg-success-bg px-1.5 py-0.5 rounded-sm border border-success/30">PASS</span>
+</div>
+</div>
+<div class="bg-[#020617] border border-[#334155] rounded-sm p-3">
+<div class="flex items-center justify-between mb-2">
+<span class="font-code-sm text-code-sm text-on-surface-variant">Command executed:</span>
+</div>
+<code class="font-code-base text-code-base text-primary block mb-3">$ pytest tests/test_parser.py</code>
+<details class="group">
+<summary class="font-code-sm text-code-sm text-secondary cursor-pointer hover:text-on-surface flex items-center gap-1 select-none">
+<span class="material-symbols-outlined text-[14px] group-open:rotate-90 transition-transform">chevron_right</span>
+                                        Show terminal output trace
+                                    </summary>
+<div class="mt-3 p-3 bg-black/50 rounded-sm font-code-sm text-code-sm text-on-surface-variant max-h-48 overflow-y-auto terminal-scroll whitespace-pre">
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-7.4.0, pluggy-1.2.0
+rootdir: /workspace/bug-to-pr-agent
+collected 1 item
+
+tests/test_parser.py .                                                   [100%]
+
+============================== 1 passed in 0.05s ===============================</div>
+</details>
+</div>
+</div>
+</div>
+<!-- 2. Relevant Tests -->
+<div class="bg-[#1e293b] border border-[#334155] rounded-DEFAULT flex flex-col overflow-hidden">
+<div class="px-4 py-3 border-b border-[#334155] flex justify-between items-center bg-[#0f172a]/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">rule</span>
+<h2 class="font-label-caps text-label-caps text-on-surface">Relevant Tests</h2>
+</div>
+<span class="bg-success-bg text-success border border-success/30 px-2 py-0.5 rounded-sm font-code-sm text-code-sm">PASS</span>
+</div>
+<div class="p-6 flex flex-col items-center justify-center flex-1 text-center">
+<div class="text-[40px] font-display-lg font-bold text-on-surface mb-2">48</div>
+<p class="font-body-base text-body-base text-on-surface-variant mb-4">Tests related to modified files passed successfully.</p>
+<div class="flex gap-4 font-code-sm text-code-sm">
+<span class="text-success flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check</span> 48 passed</span>
+<span class="text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">close</span> 0 failed</span>
+</div>
+</div>
+</div>
+<!-- 4. Protected Tests -->
+<div class="bg-[#1e293b] border border-[#334155] rounded-DEFAULT flex flex-col overflow-hidden">
+<div class="px-4 py-3 border-b border-[#334155] flex justify-between items-center bg-[#0f172a]/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">shield</span>
+<h2 class="font-label-caps text-label-caps text-on-surface">Protected Tests</h2>
+</div>
+<span class="bg-success-bg text-success border border-success/30 px-2 py-0.5 rounded-sm font-code-sm text-code-sm">PASS</span>
+</div>
+<div class="p-6 flex flex-col items-center justify-center flex-1 text-center bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiMzMzQxNTUiIGZpbGwtb3BhY2l0eT0iMC40Ii8+PC9zdmc+')]">
+<span class="material-symbols-outlined text-[32px] text-on-surface-variant mb-3">lock</span>
+<p class="font-body-base text-body-base text-on-surface-variant">No benchmark files modified.</p>
+<p class="font-code-sm text-code-sm text-secondary mt-2 bg-[#020617] px-2 py-1 rounded border border-[#334155]">tests/benchmarks/* unchanged</p>
+</div>
+</div>
+<!-- 3. Full Suite Comparison -->
+<div class="md:col-span-2 bg-[#1e293b] border border-[#334155] rounded-DEFAULT flex flex-col overflow-hidden">
+<div class="px-4 py-3 border-b border-[#334155] flex justify-between items-center bg-[#0f172a]/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">monitor_heart</span>
+<h2 class="font-label-caps text-label-caps text-on-surface">Full Suite Comparison</h2>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-success font-code-sm text-code-sm">0 NEW FAILURES</span>
+<span class="bg-success-bg text-success border border-success/30 px-2 py-0.5 rounded-sm font-code-sm text-code-sm">PASS</span>
+</div>
+</div>
+<div class="p-0">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-[#334155] bg-[#0f172a]/30">
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant">State</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant">Passed</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant">Failed</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant">Diff</th>
+</tr>
+</thead>
+<tbody class="font-code-base text-code-base">
+<tr class="border-b border-[#334155]">
+<td class="py-3 px-4 text-on-surface">Baseline</td>
+<td class="py-3 px-4 text-on-surface-variant">1420</td>
+<td class="py-3 px-4 text-error">3</td>
+<td class="py-3 px-4 text-on-surface-variant">-</td>
+</tr>
+<tr class="bg-primary/5">
+<td class="py-3 px-4 text-on-surface font-semibold flex items-center gap-2">
+                                            Post-Fix
+                                            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</td>
+<td class="py-3 px-4 text-success">1420</td>
+<td class="py-3 px-4 text-error">3</td>
+<td class="py-3 px-4 text-on-surface-variant flex items-center">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">drag_handle</span>
+                                            0
+                                        </td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

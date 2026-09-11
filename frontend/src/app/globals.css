@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Colors ── */
+  --color-background: #0b1326;
+  --color-on-background: #dae2fd;
+  --color-surface: #0b1326;
+  --color-surface-dim: #0b1326;
+  --color-surface-bright: #31394d;
+  --color-surface-container-lowest: #060e20;
+  --color-surface-container-low: #131b2e;
+  --color-surface-container: #171f33;
+  --color-surface-container-high: #222a3d;
+  --color-surface-container-highest: #2d3449;
+  --color-on-surface: #dae2fd;
+  --color-on-surface-variant: #c7c4d7;
+  --color-surface-variant: #2d3449;
+  --color-surface-tint: #c0c1ff;
+  --color-inverse-surface: #dae2fd;
+  --color-inverse-on-surface: #283044;
+  --color-outline: #908fa0;
+  --color-outline-variant: #464554;
+  --color-primary: #c0c1ff;
+  --color-on-primary: #1000a9;
+  --color-primary-container: #8083ff;
+  --color-on-primary-container: #0d0096;
+  --color-primary-fixed: #e1e0ff;
+  --color-primary-fixed-dim: #c0c1ff;
+  --color-on-primary-fixed: #07006c;
+  --color-on-primary-fixed-variant: #2f2ebe;
+  --color-inverse-primary: #494bd6;
+  --color-secondary: #bcc7de;
+  --color-on-secondary: #263143;
+  --color-secondary-container: #3e495d;
+  --color-on-secondary-container: #aeb9d0;
+  --color-secondary-fixed: #d8e3fb;
+  --color-secondary-fixed-dim: #bcc7de;
+  --color-on-secondary-fixed: #111c2d;
+  --color-on-secondary-fixed-variant: #3c475a;
+  --color-tertiary: #ffb783;
+  --color-on-tertiary: #4f2500;
+  --color-tertiary-container: #d97721;
+  --color-on-tertiary-container: #452000;
+  --color-tertiary-fixed: #ffdcc5;
+  --color-tertiary-fixed-dim: #ffb783;
+  --color-on-tertiary-fixed: #301400;
+  --color-on-tertiary-fixed-variant: #703700;
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  /* Semantic status colors */
+  --color-success: #4ade80;
+  --color-success-container: #0f2e1a;
+  --color-success-border: #166534;
+  --color-warning: #fbbf24;
+  --color-info: #60a5fa;
+
+  /* ── Typography ── */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* ── Spacing ── */
+  --spacing-unit: 4px;
+  --spacing-element-gap: 12px;
+  --spacing-gutter: 16px;
+  --spacing-container-padding: 24px;
+  --spacing-sidebar-width: 260px;
+
+  /* ── Border Radius ── */
+  --radius-sm: 0.125rem;
+  --radius: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+}
+
+/* ── Base styles ── */
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface-container-lowest);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-container-highest);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
+
+/* ── Pipeline connector ── */
+.pipeline-connector {
+  position: absolute;
+  left: 11px;
+  top: 24px;
+  bottom: -8px;
+  width: 2px;
+  background-color: var(--color-outline-variant);
+  z-index: 0;
+}
+.pipeline-connector.active {
+  background-color: var(--color-primary);
+}
+
+/* ── Code block syntax highlighting ── */
+.token-keyword { color: #c0c1ff; }
+.token-string { color: #ffb783; }
+.token-comment { color: #908fa0; }
+.token-function { color: #8083ff; }
+.token-number { color: #ffb4ab; }
+.token-operator { color: #bcc7de; }
+.token-added { color: #4ade80; background-color: rgba(74, 222, 128, 0.1); }
+.token-removed { color: #ffb4ab; background-color: rgba(255, 180, 171, 0.1); }
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}

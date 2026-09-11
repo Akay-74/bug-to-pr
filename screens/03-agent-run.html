@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bug-to-PR Agent - Run Progress</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#2f2ebe",
+                      "secondary": "#bcc7de",
+                      "background": "#0b1326",
+                      "tertiary-fixed-dim": "#ffb783",
+                      "on-error-container": "#ffdad6",
+                      "tertiary-container": "#d97721",
+                      "on-background": "#dae2fd",
+                      "primary-container": "#8083ff",
+                      "secondary-fixed-dim": "#bcc7de",
+                      "surface-bright": "#31394d",
+                      "on-secondary-fixed-variant": "#3c475a",
+                      "on-tertiary": "#4f2500",
+                      "outline-variant": "#464554",
+                      "on-surface": "#dae2fd",
+                      "secondary-fixed": "#d8e3fb",
+                      "primary-fixed": "#e1e0ff",
+                      "on-error": "#690005",
+                      "on-primary-fixed": "#07006c",
+                      "inverse-primary": "#494bd6",
+                      "primary-fixed-dim": "#c0c1ff",
+                      "surface-container-highest": "#2d3449",
+                      "surface-container-low": "#131b2e",
+                      "surface-variant": "#2d3449",
+                      "error-container": "#93000a",
+                      "secondary-container": "#3e495d",
+                      "error": "#ffb4ab",
+                      "surface": "#0b1326",
+                      "surface-tint": "#c0c1ff",
+                      "inverse-on-surface": "#283044",
+                      "surface-container": "#171f33",
+                      "on-tertiary-fixed": "#301400",
+                      "tertiary-fixed": "#ffdcc5",
+                      "on-secondary": "#263143",
+                      "surface-container-high": "#222a3d",
+                      "surface-container-lowest": "#060e20",
+                      "on-tertiary-container": "#452000",
+                      "surface-dim": "#0b1326",
+                      "inverse-surface": "#dae2fd",
+                      "tertiary": "#ffb783",
+                      "on-tertiary-fixed-variant": "#703700",
+                      "on-secondary-fixed": "#111c2d",
+                      "outline": "#908fa0",
+                      "primary": "#c0c1ff",
+                      "on-secondary-container": "#aeb9d0",
+                      "on-primary": "#1000a9",
+                      "on-surface-variant": "#c7c4d7",
+                      "on-primary-container": "#0d0096"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "element-gap": "12px",
+                      "unit": "4px",
+                      "sidebar-width": "260px",
+                      "container-padding": "24px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "body-base": ["Inter"],
+                      "label-caps": ["Inter"],
+                      "code-sm": ["JetBrains Mono"],
+                      "code-base": ["JetBrains Mono"],
+                      "body-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "display-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "body-base": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "code-base": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .terminal-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .terminal-scroll::-webkit-scrollbar-track {
+            background: theme('colors.surface-container-lowest'); 
+        }
+        .terminal-scroll::-webkit-scrollbar-thumb {
+            background: theme('colors.surface-container-highest'); 
+        }
+        .pipeline-connector {
+            position: absolute;
+            left: 11px; /* Center of the 24px icon */
+            top: 24px;
+            bottom: -8px;
+            width: 2px;
+            background-color: theme('colors.outline-variant');
+            z-index: 0;
+        }
+        .pipeline-connector.active {
+            background-color: theme('colors.primary');
+        }
+        .pipeline-connector:last-child {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-base h-screen overflow-hidden flex flex-col antialiased">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-gutter h-14 bg-surface-container-low border-b border-outline-variant text-primary font-headline-md text-headline-md font-body-base text-body-base font-label-caps text-label-caps">
+<div class="flex items-center gap-element-gap">
+<span class="font-headline-md text-headline-md font-bold text-on-surface cursor-pointer hover:opacity-80 transition-opacity">Bug-to-PR Agent</span>
+</div>
+<nav class="hidden md:flex h-full">
+<a class="flex items-center px-4 text-on-surface-variant hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 transition-all" href="#">Issues</a>
+<a class="flex items-center px-4 text-primary border-b-2 border-primary cursor-pointer active:opacity-80 transition-all" href="#">Runs</a>
+<a class="flex items-center px-4 text-on-surface-variant hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 transition-all" href="#">Benchmarks</a>
+<a class="flex items-center px-4 text-on-surface-variant hover:bg-surface-container-highest transition-colors cursor-pointer active:opacity-80 transition-all" href="#">About</a>
+</nav>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="dark_mode">dark_mode</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="terminal">terminal</span>
+</button>
+<button class="ml-2 px-4 py-1.5 bg-primary-container text-on-primary-container font-label-caps text-label-caps rounded-DEFAULT hover:bg-primary hover:text-on-primary transition-colors flex items-center gap-2">
+                GitHub
+            </button>
+</div>
+</header>
+<div class="flex flex-1 pt-14 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-14 bottom-0 w-sidebar-width flex flex-col z-40 bg-surface-container border-r border-outline-variant font-label-caps text-label-caps font-body-sm text-body-sm text-primary hidden md:flex">
+<div class="p-container-padding border-b border-outline-variant flex items-start gap-3">
+<div class="w-10 h-10 rounded-DEFAULT bg-surface-container-highest border border-outline-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="folder">folder</span>
+</div>
+<div class="overflow-hidden">
+<h2 class="font-headline-md text-headline-md font-black text-primary truncate">bug-to-pr-agent</h2>
+<p class="text-on-surface-variant font-body-sm text-body-sm truncate mt-1">v1.4.2-stable</p>
+</div>
+</div>
+<div class="p-4">
+<button class="w-full bg-primary-container text-on-primary-container font-label-caps text-label-caps py-2 rounded-DEFAULT flex items-center justify-center gap-2 hover:bg-primary hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    New Run
+                </button>
+</div>
+<nav class="flex-1 overflow-y-auto py-2">
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="input">input</span>
+                    Intake
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings_suggest">settings_suggest</span>
+                    Prep
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="location_searching">location_searching</span>
+                    Localization
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 bg-secondary-container text-on-secondary-container border-l-4 border-primary transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="auto_awesome" data-weight="fill" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                    Generation
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="fact_check">fact_check</span>
+                    Verification
+                </a>
+</nav>
+<div class="border-t border-outline-variant py-2 mt-auto">
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="terminal">terminal</span>
+                    Logs
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+                    Settings
+                </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-sidebar-width flex flex-col h-full overflow-hidden bg-surface">
+<!-- Context Header -->
+<div class="px-container-padding py-6 border-b border-outline-variant flex items-center justify-between shrink-0 bg-surface-container-lowest">
+<div>
+<div class="flex items-center gap-3 mb-1">
+<span class="font-code-sm text-code-sm text-on-surface-variant">RUN-8X9P2-CLAUDE</span>
+<span class="flex items-center gap-1 px-2 py-0.5 rounded-sm bg-primary-container/20 border border-primary text-primary font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+                            RUNNING
+                        </span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface">Agent Run Progress</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<div class="font-label-caps text-label-caps text-on-surface-variant">Elapsed</div>
+<div class="font-code-base text-code-base text-on-surface">02:14s</div>
+</div>
+<button class="px-4 py-2 border border-outline-variant rounded-DEFAULT font-label-caps text-label-caps text-error hover:bg-error-container/10 transition-colors">
+                        Abort Run
+                    </button>
+</div>
+</div>
+<!-- Pipeline & Terminal Split -->
+<div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+<!-- Pipeline List -->
+<div class="w-full lg:w-1/2 p-container-padding overflow-y-auto border-r border-outline-variant">
+<div class="max-w-xl">
+<!-- Step 1: Intake (Done) -->
+<div class="relative pl-10 pb-8">
+<div class="pipeline-connector active"></div>
+<div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/20 border border-primary flex items-center justify-center z-10 text-primary">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Issue intake</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Successfully parsed issue #492. Extracted error trace and relevant context.</p>
+</div>
+<!-- Step 2: Prep (Done) -->
+<div class="relative pl-10 pb-8">
+<div class="pipeline-connector active"></div>
+<div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/20 border border-primary flex items-center justify-center z-10 text-primary">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Repository preparation</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Cloned main branch. Created working tree /tmp/workspace/run-8x9p2.</p>
+</div>
+<!-- Step 3: Baseline (Done) -->
+<div class="relative pl-10 pb-8">
+<div class="pipeline-connector active"></div>
+<div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/20 border border-primary flex items-center justify-center z-10 text-primary">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Baseline validation</h3>
+<div class="mt-2 bg-surface-container p-3 rounded-DEFAULT border border-outline-variant">
+<p class="font-code-sm text-code-sm text-error">Regression test failed as expected.</p>
+<p class="font-code-sm text-code-sm text-on-surface-variant mt-1">Found 1 failing test in test_parser.py</p>
+</div>
+</div>
+<!-- Step 4: Localization (Done) -->
+<div class="relative pl-10 pb-8">
+<div class="pipeline-connector active"></div>
+<div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/20 border border-primary flex items-center justify-center z-10 text-primary">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Localization</h3>
+<p class="font-body-sm text-body-sm text-secondary">5 candidate locations found in 2 files.</p>
+<div class="mt-2 flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container border border-outline-variant rounded-sm font-code-sm text-code-sm text-on-surface-variant">src/parser/ast.py</span>
+<span class="px-2 py-1 bg-surface-container border border-outline-variant rounded-sm font-code-sm text-code-sm text-on-surface-variant">src/utils/nodes.py</span>
+</div>
+</div>
+<!-- Step 5: Generation (Active) -->
+<div class="relative pl-10 pb-8">
+<div class="pipeline-connector"></div>
+<div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary border-2 border-primary-container flex items-center justify-center z-10 text-on-primary">
+<div class="w-2 h-2 bg-on-primary rounded-full animate-pulse"></div>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Fix generation</h3>
+<div class="mt-2 bg-surface-container-high p-4 rounded-DEFAULT border border-primary shadow-[0_0_15px_rgba(192,193,255,0.1)]">
+<div class="flex items-center gap-2 mb-3 text-primary">
+<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+<span class="font-body-sm text-body-sm">Generating patch with Claude 3.5 Sonnet...</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-2/3 animate-[pulse_2s_ease-in-out_infinite]"></div>
+</div>
+</div>
+</div>
+<!-- Step 6: Verification (Pending) -->
+<div class="relative pl-10 pb-8">
+<div class="pipeline-connector"></div>
+<div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center z-10">
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface-variant mb-1">Verification</h3>
+<div class="mt-2 space-y-2 opacity-50">
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-outline-variant">radio_button_unchecked</span> <span class="font-body-sm text-body-sm text-on-surface-variant">Syntax Check</span></div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-outline-variant">radio_button_unchecked</span> <span class="font-body-sm text-body-sm text-on-surface-variant">Linting</span></div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-outline-variant">radio_button_unchecked</span> <span class="font-body-sm text-body-sm text-on-surface-variant">Regression Tests</span></div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-outline-variant">radio_button_unchecked</span> <span class="font-body-sm text-body-sm text-on-surface-variant">Relevant Tests</span></div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-outline-variant">radio_button_unchecked</span> <span class="font-body-sm text-body-sm text-on-surface-variant">Full Suite</span></div>
+</div>
+</div>
+<!-- Step 7: Result (Pending) -->
+<div class="relative pl-10">
+<div class="pipeline-connector" style="display: none;"></div>
+<div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center z-10">
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface-variant mb-1">Result</h3>
+</div>
+</div>
+</div>
+<!-- Terminal Panel -->
+<div class="w-full lg:w-1/2 flex flex-col bg-[#060e20] border-t lg:border-t-0 lg:border-l border-outline-variant z-10 relative">
+<div class="flex items-center justify-between px-4 py-2 border-b border-outline-variant bg-surface-container-low shrink-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">terminal</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">System Output Stream</span>
+</div>
+<div class="flex gap-2">
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[16px]">content_copy</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[16px]">open_in_full</span></button>
+</div>
+</div>
+<div class="flex-1 p-4 overflow-y-auto terminal-scroll font-code-base text-code-base text-secondary-fixed-dim space-y-1">
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:02:10.123</span><span class="text-on-surface">[SYSTEM] Initializing agent container runtime...</span></div>
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:02:11.004</span><span class="text-secondary">[GIT] Cloning repository https://github.com/org/repo.git</span></div>
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:02:14.551</span><span class="text-secondary">[GIT] Checked out branch 'main'</span></div>
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:02:15.202</span><span class="text-on-surface">[PYTEST] Collecting baseline test environment...</span></div>
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:02:18.910</span><span class="text-on-surface">[PYTEST] Running pytest tests/test_parser.py</span></div>
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:02:22.333</span><span class="text-error">FAILED tests/test_parser.py::test_ast_generation - AssertionError</span></div>
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:02:22.401</span><span class="text-on-surface">[LOCALIZE] Analyzing traceback...</span></div>
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:02:24.112</span><span class="text-secondary">[LOCALIZE] Identified src/parser/ast.py lines 145-160</span></div>
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:02:24.890</span><span class="text-on-surface">[LLM] Constructing prompt for Claude 3.5 Sonnet</span></div>
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:02:25.011</span><span class="text-tertiary-fixed-dim">[LLM] Request dispatched. Awaiting response chunk...</span></div>
+<div class="flex"><span class="text-on-surface-variant w-24 shrink-0">14:03:10.442</span><span class="text-tertiary-fixed-dim">[LLM] Receiving patch delta...</span></div>
+<div class="flex animate-pulse"><span class="text-on-surface-variant w-24 shrink-0">14:03:12.881</span><span class="text-on-surface">[AGENT] Applying patch to src/parser/ast.py..._</span></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

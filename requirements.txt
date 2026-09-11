@@ -1,0 +1,21 @@
+alembic==1.19.1
+anyio==4.14.2
+click==8.5.0
+docker==7.2.0
+fastapi==0.141.1
+h11==0.16.0
+httpx==0.28.1
+numpy==2.5.2
+psycopg2-binary==2.9.12
+pydantic==2.13.5
+pydantic-settings==2.15.0
+pydantic_core==2.46.5
+pytest==9.1.1
+python-dotenv==1.2.3
+# Only required for backend/localization's real embedding backends (Jina
+# Code Embeddings, CodeRankEmbed); not needed to run the unit test suite,
+# which injects a fake EmbeddingBackend instead of loading either model.
+sentence-transformers==6.0.0
+SQLAlchemy==2.0.52
+starlette==1.6.0
+uvicorn==0.52.4

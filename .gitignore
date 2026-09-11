@@ -1,0 +1,42 @@
+# --- secrets -------------------------------------------------------------
+# .env holds your API key. Only the template is committed.
+.env
+.env.*
+!.env.example
+
+# --- Python --------------------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Frontend ------------------------------------------------------------
+node_modules/
+frontend/.next/
+frontend/out/
+*.tsbuildinfo
+
+# --- Generated at runtime ------------------------------------------------
+# Embedding + git-mirror cache (~1.4 GB, rebuilt on demand).
+backend/cache/
+# Built by tests/fixtures/build_fixture_repo.py; a nested git repository
+# cannot be committed inside this one.
+tests/fixtures/fixture_repo/
+# Written by tests/conftest.py at the start of every run, with absolute paths.
+tests/fixtures/allowlist.json
+tests/fixtures/issues/
+
+# Output of the graphify knowledge-graph tool (machine-specific paths).
+graphify-out/
+
+# --- Editors / OS / local tooling ----------------------------------------
+.claude/settings.local.json
+.idea/
+.vscode/
+*.swp
+.DS_Store
+*.log

@@ -1,0 +1,26 @@
+{
+  "issue_id": "sympy__sympy-13480",
+  "issue_url": "https://github.com/sympy/sympy/pull/13480",
+  "repo": "sympy/sympy",
+  "base_commit": "f57fe3f4b3f2cab225749e1b3b38ae1bf80b62f0",
+  "python_version": "3.9",
+  "install_command": "python -m pip install mpmath==1.3.0 flake8-comprehensions && python -m pip install -e .",
+  "regression_test_command": "PYTHONWARNINGS='ignore::UserWarning,ignore::SyntaxWarning' bin/test -C --verbose sympy/functions/elementary/tests/test_hyperbolic.py",
+  "regression_test_ids": [
+    "test_coth"
+  ],
+  "relevant_test_command": "PYTHONWARNINGS='ignore::UserWarning,ignore::SyntaxWarning' bin/test -C --verbose sympy/functions/elementary/tests/test_hyperbolic.py",
+  "full_test_command": "PYTHONWARNINGS='ignore::UserWarning,ignore::SyntaxWarning' bin/test -C",
+  "protected_test_paths": [
+    "sympy/functions/elementary/tests/test_hyperbolic.py"
+  ],
+  "baseline_failures": [
+    {
+      "test_id": "test_coth",
+      "exit_code": 1,
+      "stdout": "============================= test process starts ==============================\nexecutable:         /workspace/.venv/bin/python  (3.9.25-final-0) [CPython]\narchitecture:       64-bit\ncache:              no\nground types:       python \nnumpy:              None\nrandom seed:        34709670\nhash randomization: on (PYTHONHASHSEED=3775098406)\n\nsympy/functions/elementary/tests/test_hyperbolic.py[45] \ntest_sinh ok\ntest_sinh_series ok\ntest_cosh ok\ntest_cosh_series ok\ntest_tanh ok\ntest_tanh_series ok\ntest_coth E\ntest_coth_series ok\ntest_csch ok\ntest_csch_series ok\ntest_sech ok\ntest_sech_series ok\ntest_asinh ok\ntest_asinh_rewrite ok\ntest_asinh_series ok\ntest_acosh ok\ntest_acosh_rewrite ok\ntest_acosh_series ok\ntest_asech ok\ntest_asech_series ok\ntest_asech_rewrite ok\ntest_acsch ok\ntest_acsch_infinities ok\ntest_acsch_rewrite ok\ntest_atanh ok\ntest_atanh_rewrite ok\ntest_atanh_series ok\ntest_acoth ok\ntest_acoth_rewrite ok\ntest_acoth_series ok\ntest_inverses ok\ntest_leading_term ok\ntest_complex ok\ntest_complex_2899 ok\ntest_simplifications ok\ntest_issue_4136 ok\ntest_sinh_rewrite ok\ntest_cosh_rewrite ok\ntest_tanh_rewrite ok\ntest_coth_rewrite ok\ntest_csch_rewrite ok\ntest_sech_rewrite ok\ntest_derivs ok\ntest_sinh_expansion ok\ntest_cosh_expansion ok                                                    [FAIL]\n\n\n________________________________________________________________________________\n________ sympy/functions/elementary/tests/test_hyperbolic.py:test_coth _________\n  File \"/workspace/sympy/functions/elementary/tests/test_hyperbolic.py\", line 275, in test_coth\n    assert coth(log(tan(2))) == coth(log(-tan(2)))\n  File \"/workspace/sympy/core/function.py\", line 439, in __new__\n    result = super(Function, cls).__new__(cls, *args, **options)\n  File \"/workspace/sympy/core/function.py\", line 250, in __new__\n    evaluated = cls.eval(*args)\n  File \"/workspace/sympy/functions/elementary/hyperbolic.py\", line 590, in eval\n    if cotm is S.ComplexInfinity:\nNameError: name 'cotm' is not defined\n\n=========== tests finished: 44 passed, 1 exceptions, in 6.43 seconds ===========\nDO *NOT* COMMIT!\n",
+      "stderr": "/workspace/sympy/core/basic.py:3: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working\n  from collections import Mapping, defaultdict\n/workspace/sympy/core/containers.py:271: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working\n  class OrderedSet(collections.MutableSet):\n/workspace/sympy/plotting/plot.py:28: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working\n  from collections import Callable\n/workspace/sympy/core/basic.py:3: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working\n  from collections import Mapping, defaultdict\n/workspace/sympy/core/containers.py:271: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working\n  class OrderedSet(collections.MutableSet):\n/workspace/sympy/plotting/plot.py:28: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working\n  from collections import Callable\n"
+    }
+  ],
+  "validation_status": "valid"
+}

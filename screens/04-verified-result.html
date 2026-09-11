@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bug-to-PR Agent - Verified Result</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "secondary": "#bcc7de",
+                    "background": "#0b1326",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "on-error-container": "#ffdad6",
+                    "tertiary-container": "#d97721",
+                    "on-background": "#dae2fd",
+                    "primary-container": "#8083ff",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "surface-bright": "#31394d",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "on-tertiary": "#4f2500",
+                    "outline-variant": "#464554",
+                    "on-surface": "#dae2fd",
+                    "secondary-fixed": "#d8e3fb",
+                    "primary-fixed": "#e1e0ff",
+                    "on-error": "#690005",
+                    "on-primary-fixed": "#07006c",
+                    "inverse-primary": "#494bd6",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "surface-container-highest": "#2d3449",
+                    "surface-container-low": "#131b2e",
+                    "surface-variant": "#2d3449",
+                    "error-container": "#93000a",
+                    "secondary-container": "#3e495d",
+                    "error": "#ffb4ab",
+                    "surface": "#0b1326",
+                    "surface-tint": "#c0c1ff",
+                    "inverse-on-surface": "#283044",
+                    "surface-container": "#171f33",
+                    "on-tertiary-fixed": "#301400",
+                    "tertiary-fixed": "#ffdcc5",
+                    "on-secondary": "#263143",
+                    "surface-container-high": "#222a3d",
+                    "surface-container-lowest": "#060e20",
+                    "on-tertiary-container": "#452000",
+                    "surface-dim": "#0b1326",
+                    "inverse-surface": "#dae2fd",
+                    "tertiary": "#ffb783",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "on-secondary-fixed": "#111c2d",
+                    "outline": "#908fa0",
+                    "primary": "#c0c1ff",
+                    "on-secondary-container": "#aeb9d0",
+                    "on-primary": "#1000a9",
+                    "on-surface-variant": "#c7c4d7",
+                    "on-primary-container": "#0d0096"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "element-gap": "12px",
+                    "unit": "4px",
+                    "sidebar-width": "260px",
+                    "container-padding": "24px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-base": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "code-sm": ["JetBrains Mono"],
+                    "code-base": ["JetBrains Mono"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-base": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "code-base": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Subtle scanline effect for terminal vibe */
+        .scanline::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 10;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="bg-surface-dim text-on-surface h-screen overflow-hidden flex flex-col font-body-base">
+<!-- TopNavBar -->
+<header class="bg-surface-container-low border-b border-outline-variant fixed top-0 w-full z-50 flex items-center justify-between px-gutter h-14">
+<div class="flex items-center gap-6">
+<div class="font-headline-md text-headline-md font-bold text-on-surface">Bug-to-PR Agent</div>
+<nav class="hidden md:flex h-full">
+<ul class="flex items-center gap-6 h-full">
+<li class="h-full flex items-center">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-highest transition-colors px-2 py-1 rounded cursor-pointer active:opacity-80 transition-all" href="#">Issues</a>
+</li>
+<li class="h-full flex items-center border-b-2 border-primary pt-2 pb-0">
+<a class="font-label-caps text-label-caps text-primary cursor-pointer active:opacity-80 transition-all" href="#">Runs</a>
+</li>
+<li class="h-full flex items-center">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-highest transition-colors px-2 py-1 rounded cursor-pointer active:opacity-80 transition-all" href="#">Benchmarks</a>
+</li>
+<li class="h-full flex items-center">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-highest transition-colors px-2 py-1 rounded cursor-pointer active:opacity-80 transition-all" href="#">About</a>
+</li>
+</ul>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer active:opacity-80 transition-all">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer active:opacity-80 transition-all">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</button>
+<button class="bg-primary text-on-primary font-label-caps text-label-caps px-4 py-2 rounded flex items-center gap-2 hover:bg-primary-fixed-dim transition-colors cursor-pointer active:opacity-80 transition-all">
+<span class="material-symbols-outlined text-[16px]" data-icon="github">save_as</span> <!-- Assuming github icon exists or using general icon -->
+                GitHub
+            </button>
+</div>
+</header>
+<div class="flex flex-1 pt-14 h-full relative">
+<!-- SideNavBar -->
+<aside class="bg-surface-container border-r border-outline-variant fixed left-0 top-14 bottom-0 w-sidebar-width flex flex-col z-40 hidden md:flex">
+<div class="p-4 border-b border-outline-variant flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container-highest flex items-center justify-center border border-outline-variant overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Abstract geometric avatar for a project repository, high contrast black and white with a subtle cyan glow, clean minimalist design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7-5yAMBdnPoI9qVDuc_mNWuGZevwo3fG-QFoB2IVZottZW5SE88fSc2trSR0KgIjpMG57pLQUskkJhOF8wiaLB87M_Fv9Qk3L3CN8K4WPuDVUGtArBmqXhpitN6jAkwVHrFmeDWT0dzFluWVO7AElsUlhPXf1NqGYsb0DUUaQV4F9xLRnGeUSSatka0wAhWc6q_mXYMjvgbsnCYKv4_qFK9fUfuXtnOG9sf6ofqmYmR4-NqtEGBastw"/>
+</div>
+<div class="overflow-hidden">
+<div class="font-label-caps text-label-caps text-on-surface truncate">bug-to-pr-agent</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">v1.4.2-stable</div>
+</div>
+</div>
+<div class="p-4">
+<button class="w-full bg-inverse-primary text-inverse-on-surface font-label-caps text-label-caps py-2 rounded flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">add</span>
+                    New Run
+                </button>
+</div>
+<nav class="flex-1 overflow-y-auto py-2">
+<ul class="flex flex-col space-y-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="input">input</span>
+                            Intake
+                        </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings_suggest">settings_suggest</span>
+                            Prep
+                        </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="location_searching">location_searching</span>
+                            Localization
+                        </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="auto_awesome">auto_awesome</span>
+                            Generation
+                        </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-2 bg-secondary-container text-on-secondary-container border-l-4 border-primary transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="fact_check">fact_check</span>
+                            Verification
+                        </a>
+</li>
+</ul>
+</nav>
+<div class="border-t border-outline-variant py-2">
+<ul class="flex flex-col space-y-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="terminal">terminal</span>
+                            Logs
+                        </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-150 ease-in-out font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+                            Settings
+                        </a>
+</li>
+</ul>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 md:ml-sidebar-width overflow-y-auto p-container-padding">
+<div class="max-w-5xl mx-auto space-y-8">
+<!-- Top Badge & Header -->
+<div class="space-y-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-outline-variant bg-surface-container-low">
+<div class="w-1.5 h-1.5 rounded-full bg-primary-fixed"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-wider">CACHED BENCHMARK RESULT</span>
+</div>
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-[36px] text-primary">verified</span>
+                            VERIFIED FIX
+                        </h1>
+<p class="font-body-base text-body-base text-on-surface-variant mt-2 max-w-2xl">
+                            The generated patch fixed the reported regression without introducing new test failures.
+                        </p>
+</div>
+</div>
+<!-- Summary Bento Grid -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-element-gap">
+<div class="bg-surface-container border border-outline-variant rounded-lg p-4 flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Model</span>
+<div class="font-code-base text-code-base text-on-surface mt-2">Sonnet</div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-lg p-4 flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Attempts</span>
+<div class="font-code-base text-code-base text-on-surface mt-2">2</div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-lg p-4 flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Runtime</span>
+<div class="font-code-base text-code-base text-on-surface mt-2">4m 12s</div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-lg p-4 flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Cost</span>
+<div class="font-code-base text-code-base text-on-surface mt-2">$0.21</div>
+</div>
+</div>
+<!-- Verification Overview Panel -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl overflow-hidden relative scanline">
+<div class="border-b border-outline-variant bg-surface-container-highest px-6 py-4">
+<h2 class="font-headline-md text-headline-md text-on-surface">Verification Overview</h2>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8 relative z-20">
+<div class="space-y-6">
+<!-- Regression Test -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Regression Test</span>
+</div>
+<div class="bg-background border border-outline-variant rounded p-3 flex items-center justify-between font-code-sm text-code-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-error">cancel</span>
+<span class="text-on-surface-variant">FAIL</span>
+</div>
+<span class="material-symbols-outlined text-[14px] text-outline-variant">arrow_forward</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-primary">check_circle</span>
+<span class="text-on-surface">PASS</span>
+</div>
+</div>
+</div>
+<!-- Protected Tests -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Protected Tests</span>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-label-caps text-[10px]">PASS</span>
+</div>
+<div class="bg-background border border-outline-variant rounded p-3 font-code-sm text-code-sm text-on-surface-variant">
+                                    No modifications
+                                </div>
+</div>
+</div>
+<div class="space-y-6">
+<!-- Relevant Tests -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Relevant Tests</span>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-label-caps text-[10px]">PASS</span>
+</div>
+<div class="bg-background border border-outline-variant rounded p-3 font-code-sm text-code-sm text-on-surface">
+<span class="text-primary font-bold">12</span> Passed
+                                </div>
+</div>
+<!-- Full-suite -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Full-suite</span>
+</div>
+<div class="bg-background border border-outline-variant rounded p-3 font-code-sm text-code-sm">
+<div class="text-on-surface">0 new failures</div>
+<div class="text-on-surface-variant mt-1 text-[10px]">(Baseline 3, After 3)</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Fix Summary -->
+<div class="space-y-3">
+<h3 class="font-headline-md text-headline-md text-on-surface">Fix Summary</h3>
+<div class="bg-surface-container border border-outline-variant rounded-lg overflow-hidden">
+<div class="border-b border-outline-variant bg-surface-container-highest px-4 py-2 font-label-caps text-label-caps text-on-surface-variant">
+                            Changed Files
+                        </div>
+<ul class="divide-y divide-outline-variant">
+<li class="px-4 py-3 flex items-center justify-between hover:bg-surface-container-highest transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[16px] text-tertiary">description</span>
+<span class="font-code-sm text-code-sm text-on-surface">src/parser.py</span>
+</div>
+<span class="font-code-sm text-[10px] text-on-surface-variant">+12 -4</span>
+</li>
+<li class="px-4 py-3 flex items-center justify-between hover:bg-surface-container-highest transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[16px] text-tertiary">description</span>
+<span class="font-code-sm text-code-sm text-on-surface">src/utils.py</span>
+</div>
+<span class="font-code-sm text-[10px] text-on-surface-variant">+2 -0</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-4 pt-4 border-t border-outline-variant">
+<button class="bg-inverse-primary text-inverse-on-surface font-label-caps text-label-caps px-6 py-2.5 rounded hover:opacity-90 transition-opacity">
+                        View Diff
+                    </button>
+<button class="border border-outline-variant bg-transparent text-on-surface font-label-caps text-label-caps px-6 py-2.5 rounded hover:bg-surface-container-highest transition-colors">
+                        View Evidence
+                    </button>
+<button class="border border-outline-variant bg-transparent text-on-surface font-label-caps text-label-caps px-6 py-2.5 rounded hover:bg-surface-container-highest transition-colors">
+                        View Would-Be PR
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>
