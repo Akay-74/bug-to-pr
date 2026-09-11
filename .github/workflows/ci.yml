@@ -48,6 +48,10 @@ jobs:
           grep -v '^sentence-transformers' requirements.txt > /tmp/requirements-ci.txt
           pip install -r /tmp/requirements-ci.txt
 
+      # Code localization shells out to ripgrep, which the runner lacks.
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
       # The sandbox tests start containers from this image.
       - name: Pull sandbox image
         run: docker pull python:3.11-slim

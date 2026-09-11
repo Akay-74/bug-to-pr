@@ -32,6 +32,8 @@ dashboard's Benchmarks page.
 * Docker (used both to run PostgreSQL for local dev and as the sandbox for
   benchmark validation)
 * Git
+* [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`), used by code localization —
+  `sudo apt install ripgrep` / `brew install ripgrep`
 * Node.js 20.9+ for the dashboard
 * A coding model: [Ollama](https://ollama.com) with `qwen2.5-coder:7b`
   pulled, **or** an API key for a hosted model (see below)

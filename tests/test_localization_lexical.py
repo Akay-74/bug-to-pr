@@ -66,3 +66,20 @@ def test_matched_terms_for_chunk_is_deduplicated_and_scoped_to_file(tmp_path: Pa
     matched = lexical.matched_terms_for_chunk(chunk, hits)
 
     assert matched == ["add"]
+
+
+def test_missing_ripgrep_fails_with_an_actionable_message(tmp_path: Path, monkeypatch):
+    """Regression: on a machine without ripgrep (GitHub's CI runners) this
+    surfaced as a bare "No such file or directory: 'rg'".
+    """
+    import subprocess
+
+    import pytest
+
+    def missing(*args, **kwargs):
+        raise FileNotFoundError(2, "No such file or directory", "rg")
+
+    monkeypatch.setattr(subprocess, "run", missing)
+
+    with pytest.raises(lexical.RipgrepNotInstalledError, match="install ripgrep"):
+        lexical._ripgrep_hits(tmp_path, "anything")

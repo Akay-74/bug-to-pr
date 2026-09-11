@@ -73,13 +73,25 @@ class LexicalHit:
     term: str
 
 
+class RipgrepNotInstalledError(RuntimeError):
+    """Lexical retrieval needs the `rg` binary on PATH."""
+
+
 def _ripgrep_hits(workspace: Path, term: str) -> list[LexicalHit]:
-    result = subprocess.run(
-        ["rg", "--no-heading", "--line-number", "--fixed-strings", "--", term, "."],
-        cwd=workspace,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            ["rg", "--no-heading", "--line-number", "--fixed-strings", "--", term, "."],
+            cwd=workspace,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        # Failing loudly rather than skipping lexical search: silently
+        # dropping half of hybrid retrieval would change results unnoticed.
+        raise RipgrepNotInstalledError(
+            "ripgrep (`rg`) is required for code localization but was not found on PATH. "
+            "Install it, e.g. `sudo apt install ripgrep` or `brew install ripgrep`."
+        ) from None
     # rg exits 1 for "no matches" (not an error) and 2 for real errors.
     if result.returncode not in (0, 1):
         return []
