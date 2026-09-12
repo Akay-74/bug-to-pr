@@ -7,6 +7,7 @@ tests inject a fake `FixGenerationBackend` instead of talking to Ollama.
 """
 from __future__ import annotations
 
+import time
 from typing import Protocol
 
 import httpx
@@ -20,6 +21,24 @@ class ModelUnavailableError(Exception):
 
 class GenerationTimeoutError(Exception):
     """The model did not respond within the configured timeout."""
+
+
+# Transient hosted-API failures: overload, rate limiting, gateway errors.
+_TRANSIENT_STATUSES = frozenset({429, 500, 502, 503, 504})
+# Patient on purpose: free hosted tiers return 503 "high demand" in bursts
+# that last tens of seconds, and losing a benchmark issue costs far more than
+# waiting. Total worst-case wait is ~2 minutes.
+_MAX_ATTEMPTS = 6
+_BACKOFF_SECONDS = (2.0, 5.0, 15.0, 30.0, 60.0)
+_MAX_RETRY_AFTER_SECONDS = 60.0
+
+
+class _TransientBackendError(Exception):
+    """Internal: a failure worth retrying. Never escapes `generate`."""
+
+    def __init__(self, message: str, retry_after: float | None = None) -> None:
+        super().__init__(message)
+        self.retry_after = retry_after
 
 
 class FixGenerationBackend(Protocol):
@@ -103,6 +122,24 @@ class OpenAICompatibleBackend:
             raise ModelUnavailableError(
                 "GENERATION_API_KEY is not set. Add it to .env to use a hosted model."
             )
+        # A hosted endpoint fails temporarily for reasons that have nothing to
+        # do with the request (503 "high demand", a rate-limit window, a
+        # dropped connection). Retrying those is the difference between
+        # losing a benchmark issue and waiting a few seconds.
+        last_error: Exception | None = None
+        for attempt in range(_MAX_ATTEMPTS):
+            try:
+                return self._request(prompt, timeout)
+            except _TransientBackendError as exc:
+                last_error = exc
+                if attempt == _MAX_ATTEMPTS - 1:
+                    break
+                time.sleep(exc.retry_after or _BACKOFF_SECONDS[attempt])
+        raise ModelUnavailableError(
+            f"{_MAX_ATTEMPTS} attempts failed. Last error: {last_error}"
+        ) from last_error
+
+    def _request(self, prompt: str, timeout: int) -> str:
         try:
             response = httpx.post(
                 f"{self.api_base}/chat/completions",
@@ -117,23 +154,32 @@ class OpenAICompatibleBackend:
         except httpx.TimeoutException as exc:
             raise GenerationTimeoutError(f"Model '{self.model_id}' did not respond within {timeout}s") from exc
         except httpx.HTTPError as exc:
-            raise ModelUnavailableError(self._error(f"Could not reach {self.api_base}: {exc}")) from exc
+            # Connection-level failures are worth another go.
+            raise _TransientBackendError(
+                self._error(f"Could not reach {self.api_base}: {exc}")
+            ) from exc
 
         if response.status_code >= 400:
-            # Every failure here -- bad key, unknown model, free-tier quota --
-            # stops generation with a readable reason rather than crashing
-            # the run with a raw HTTP error.
+            # Every failure here -- bad key, unknown model, quota, an
+            # overloaded endpoint -- stops with a readable reason rather than
+            # crashing the run with a raw HTTP error.
             reasons = {
                 401: "the API key was rejected",
                 403: "the API key was rejected",
                 404: f"model '{self.model_id}' was not found",
-                429: "rate limit or free-tier quota reached; wait and retry",
+                429: "rate limit or free-tier quota reached",
+                500: "the provider had an internal error",
+                502: "bad gateway",
+                503: "the model is temporarily overloaded",
+                504: "the provider timed out",
             }
             reason = reasons.get(response.status_code, "request failed")
-            detail = response.text[:500]
-            raise ModelUnavailableError(
-                self._error(f"{self.api_base} returned {response.status_code} ({reason}): {detail}")
+            message = self._error(
+                f"{self.api_base} returned {response.status_code} ({reason}): {response.text[:500]}"
             )
+            if response.status_code in _TRANSIENT_STATUSES:
+                raise _TransientBackendError(message, retry_after=_retry_after(response))
+            raise ModelUnavailableError(message)
 
         try:
             return response.json()["choices"][0]["message"]["content"] or ""
@@ -141,6 +187,15 @@ class OpenAICompatibleBackend:
             raise ModelUnavailableError(
                 self._error(f"Unexpected response from {self.api_base}: {response.text[:500]}")
             ) from exc
+
+
+def _retry_after(response) -> float | None:
+    """Honour the provider's own Retry-After header when it sends one."""
+    value = response.headers.get("retry-after") if hasattr(response, "headers") else None
+    try:
+        return max(0.0, min(float(value), _MAX_RETRY_AFTER_SECONDS))
+    except (TypeError, ValueError):
+        return None
 
 
 _BACKENDS: dict[str, type[OllamaBackend] | type[OpenAICompatibleBackend]] = {

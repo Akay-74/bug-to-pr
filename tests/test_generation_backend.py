@@ -73,6 +73,7 @@ def test_get_backend_rejects_unknown_name():
 
 # --- hosted, OpenAI-compatible backend (Gemini, Groq, OpenRouter, ...) -----
 
+from backend.generation import backend as backend_module
 from backend.generation.backend import OpenAICompatibleBackend
 
 # Google-key-shaped but fake. Assembled at runtime so GitHub's secret-scanning
@@ -81,12 +82,13 @@ _FAKE_KEY = "AI" + "za" + "SyFAKE-key-for-tests-only-0123456789ab"
 
 
 class _FakeChatResponse:
-    def __init__(self, status_code=200, payload=None, text=""):
+    def __init__(self, status_code=200, payload=None, text="", headers=None):
         self.status_code = status_code
         self._payload = payload if payload is not None else {
             "choices": [{"message": {"content": "hello patch"}}]
         }
         self.text = text
+        self.headers = headers or {}
 
     def json(self):
         return self._payload
@@ -137,14 +139,107 @@ def test_hosted_backend_without_a_key_fails_clearly_and_makes_no_request(monkeyp
 
 
 @pytest.mark.parametrize("status, phrase", [
-    (401, "rejected"), (403, "rejected"), (404, "not found"), (429, "quota"), (500, "failed"),
+    (401, "rejected"), (403, "rejected"), (404, "not found"),
 ])
-def test_hosted_backend_maps_http_errors_to_model_unavailable(monkeypatch, status, phrase):
-    """A free-tier 429 must stop generation with a reason, not crash the run."""
-    monkeypatch.setattr(httpx, "post", lambda *a, **k: _FakeChatResponse(status, {}, "error body"))
+def test_hosted_backend_maps_permanent_http_errors_to_model_unavailable(monkeypatch, status, phrase):
+    """A bad key or wrong model name is final: fail immediately, don't retry."""
+    calls = []
+
+    def fake_post(*a, **k):
+        calls.append(1)
+        return _FakeChatResponse(status, {}, "error body")
+
+    monkeypatch.setattr(httpx, "post", fake_post)
 
     with pytest.raises(ModelUnavailableError, match=phrase):
         _hosted().generate("prompt", timeout=30)
+    assert len(calls) == 1, "a permanent error must not be retried"
+
+
+# --- transient failures ----------------------------------------------------
+
+
+@pytest.fixture()
+def no_sleep(monkeypatch):
+    """Backoff without the wait, so these tests stay fast."""
+    slept = []
+    monkeypatch.setattr(backend_module.time, "sleep", lambda s: slept.append(s))
+    return slept
+
+
+@pytest.mark.parametrize("status", [429, 500, 502, 503, 504])
+def test_a_transient_failure_is_retried(monkeypatch, no_sleep, status):
+    """Regression: a Gemini 503 "high demand" ended a whole benchmark issue
+    after one attempt, even though retrying a second later would have worked.
+    """
+    responses = [_FakeChatResponse(status, {}, "overloaded"), _FakeChatResponse()]
+    monkeypatch.setattr(httpx, "post", lambda *a, **k: responses.pop(0))
+
+    assert _hosted().generate("prompt", timeout=30) == "hello patch"
+    assert no_sleep == [2.0], "should back off before retrying"
+
+
+def test_retries_are_bounded_and_report_the_last_error(monkeypatch, no_sleep):
+    calls = []
+
+    def always_overloaded(*a, **k):
+        calls.append(1)
+        return _FakeChatResponse(503, {}, "overloaded")
+
+    monkeypatch.setattr(httpx, "post", always_overloaded)
+
+    with pytest.raises(ModelUnavailableError, match="attempts failed"):
+        _hosted().generate("prompt", timeout=30)
+
+    assert len(calls) == backend_module._MAX_ATTEMPTS
+    assert no_sleep == list(backend_module._BACKOFF_SECONDS), "backoff should grow"
+
+
+def test_a_dropped_connection_is_retried(monkeypatch, no_sleep):
+    attempts = []
+
+    def flaky(*a, **k):
+        attempts.append(1)
+        if len(attempts) == 1:
+            raise httpx.ConnectError("connection reset")
+        return _FakeChatResponse()
+
+    monkeypatch.setattr(httpx, "post", flaky)
+
+    assert _hosted().generate("prompt", timeout=30) == "hello patch"
+
+
+def test_the_providers_retry_after_header_wins_over_our_backoff(monkeypatch, no_sleep):
+    responses = [_FakeChatResponse(429, {}, "slow down", headers={"retry-after": "7"}),
+                 _FakeChatResponse()]
+    monkeypatch.setattr(httpx, "post", lambda *a, **k: responses.pop(0))
+
+    _hosted().generate("prompt", timeout=30)
+
+    assert no_sleep == [7.0]
+
+
+def test_an_absurd_retry_after_is_capped(monkeypatch, no_sleep):
+    """A provider asking us to wait an hour must not hang the pipeline."""
+    responses = [_FakeChatResponse(429, {}, "later", headers={"retry-after": "99999"}),
+                 _FakeChatResponse()]
+    monkeypatch.setattr(httpx, "post", lambda *a, **k: responses.pop(0))
+
+    _hosted().generate("prompt", timeout=30)
+
+    assert no_sleep == [backend_module._MAX_RETRY_AFTER_SECONDS]
+
+
+def test_a_timeout_is_not_retried(monkeypatch, no_sleep):
+    """The per-call timeout is already the budget; retrying multiplies it."""
+    def slow(*a, **k):
+        raise httpx.TimeoutException("slow")
+
+    monkeypatch.setattr(httpx, "post", slow)
+
+    with pytest.raises(GenerationTimeoutError):
+        _hosted().generate("prompt", timeout=30)
+    assert no_sleep == []
 
 
 def test_hosted_backend_never_puts_the_key_in_an_error_message(monkeypatch):
@@ -159,7 +254,7 @@ def test_hosted_backend_never_puts_the_key_in_an_error_message(monkeypatch):
     assert "[REDACTED]" in str(info.value)
 
 
-def test_hosted_backend_maps_timeout_and_connection_errors(monkeypatch):
+def test_hosted_backend_maps_timeout_and_connection_errors(monkeypatch, no_sleep):
     def timeout(*a, **k):
         raise httpx.TimeoutException("slow")
 
