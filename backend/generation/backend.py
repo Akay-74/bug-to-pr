@@ -7,6 +7,7 @@ tests inject a fake `FixGenerationBackend` instead of talking to Ollama.
 """
 from __future__ import annotations
 
+import re
 import time
 from typing import Protocol
 
@@ -31,6 +32,8 @@ _TRANSIENT_STATUSES = frozenset({429, 500, 502, 503, 504})
 _MAX_ATTEMPTS = 6
 _BACKOFF_SECONDS = (2.0, 5.0, 15.0, 30.0, 60.0)
 _MAX_RETRY_AFTER_SECONDS = 60.0
+# Gemini puts the delay in the message text rather than a Retry-After header.
+_RETRY_IN_BODY = re.compile(r"retry in ([0-9]+(?:\.[0-9]+)?)s", re.IGNORECASE)
 
 
 class _TransientBackendError(Exception):
@@ -190,12 +193,24 @@ class OpenAICompatibleBackend:
 
 
 def _retry_after(response) -> float | None:
-    """Honour the provider's own Retry-After header when it sends one."""
-    value = response.headers.get("retry-after") if hasattr(response, "headers") else None
-    try:
-        return max(0.0, min(float(value), _MAX_RETRY_AFTER_SECONDS))
-    except (TypeError, ValueError):
-        return None
+    """How long the provider asked us to wait, if it said.
+
+    Two places to look: the standard Retry-After header, and the response
+    body -- Gemini sends no header and instead writes "Please retry in
+    36.04s" into the error message.
+    """
+    header = response.headers.get("retry-after") if hasattr(response, "headers") else None
+    for value in (header, _retry_seconds_in_body(getattr(response, "text", ""))):
+        try:
+            return max(0.0, min(float(value), _MAX_RETRY_AFTER_SECONDS))
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def _retry_seconds_in_body(text: str) -> str | None:
+    match = _RETRY_IN_BODY.search(text or "")
+    return match.group(1) if match else None
 
 
 _BACKENDS: dict[str, type[OllamaBackend] | type[OpenAICompatibleBackend]] = {

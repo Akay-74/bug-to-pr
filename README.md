@@ -21,10 +21,18 @@ when GitHub access has been configured explicitly.
 | 4 | Git branch/commit and draft pull request | `docs/phase4.md` |
 | 5 | Whole workflow, dashboard, hardening, benchmark evaluation | `docs/phase5.md`, `docs/phase5-audit.md` |
 
-Latest benchmark evaluation (`qwen2.5-coder:7b`, 9 validated issues): **3 of 8
-scored issues fixed and verified (37.5%)**, one environment failure reported
-separately. Full numbers in `backend/evaluation/report.json` and on the
-dashboard's Benchmarks page.
+Latest benchmark evaluation over 9 validated issues (Django, SymPy, xarray,
+pylint, scikit-learn):
+
+| Model | Validated fixes | Fix-file Top-1 / Top-3 | Avg generation | Candidates |
+|---|---|---|---|---|
+| `gemini-3.5-flash` (hosted, max 2 candidates) | **6 of 8 scored — 75%** | 83.3% / 100% | 22.3 s | 12 |
+| `qwen2.5-coder:7b` (local, max 3 candidates) | 3 of 8 scored — 37.5% | 66.7% / 100% | 10.6 s | 21 |
+
+Environment failures are excluded from the success rate and reported
+separately (one in each run). Full numbers in
+`backend/evaluation/report.json` (current), `report-gemini.json`,
+`report-qwen2.5-coder-7b.json`, and on the dashboard's Benchmarks page.
 
 ## Requirements
 

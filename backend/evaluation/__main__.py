@@ -31,6 +31,11 @@ DEFAULT_REPORT = REPO_ROOT / "backend" / "evaluation" / "report.json"
 def _cmd_run(args) -> int:
     path = Path(args.output)
     report = load_report(path)
+    # Record the limit this run actually used, not the configured default --
+    # the report is the evidence for the numbers, so it must describe the
+    # conditions they were measured under.
+    if args.candidate_limit:
+        report.candidate_limit = args.candidate_limit
     done = {i.issue_id for i in report.issues} if args.resume else set()
 
     issue_ids = args.issues.split(",") if args.issues else validated_issue_ids()

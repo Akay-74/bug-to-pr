@@ -519,3 +519,57 @@ def test_test_patch_that_cannot_be_applied_is_an_environment_failure(db_session,
 
     assert run.status == RunStatus.FAILED
     assert _attempts(db_session, run)[0].failure_type == FailureType.ENVIRONMENT_ERROR
+
+
+# --- model service failures are not model failures -------------------------
+
+
+class _UnavailableBackend:
+    """A model API that is out of quota / overloaded."""
+
+    model_id = "unavailable-backend"
+
+    def generate(self, prompt: str, timeout: int) -> str:
+        from backend.generation.backend import ModelUnavailableError
+
+        raise ModelUnavailableError("6 attempts failed. Last error: 429 quota exceeded")
+
+
+class _TimingOutBackend:
+    model_id = "slow-backend"
+
+    def generate(self, prompt: str, timeout: int) -> str:
+        from backend.generation.backend import GenerationTimeoutError
+
+        raise GenerationTimeoutError("did not respond within 120s")
+
+
+def test_an_exhausted_model_api_is_an_environment_failure_not_a_model_failure(db_session):
+    """A hosted model out of quota says nothing about its ability to fix the
+    bug, so it must not be scored as a failed fix (docs/phase5.md).
+    """
+    run = run_fix_generation(
+        FIXTURE_ISSUE_ID,
+        db_session,
+        generation_backend=_UnavailableBackend(),
+        embedding_backend=FakeEmbeddingBackend(),
+        candidate_limit=3,
+    )
+
+    attempts = _attempts(db_session, run)
+    assert attempts[0].failure_type == FailureType.ENVIRONMENT_ERROR
+    # And it stops rather than burning the remaining candidates on a service
+    # that is not answering.
+    assert len(attempts) == 1
+
+
+def test_a_model_timeout_is_recorded_as_a_timeout(db_session):
+    run = run_fix_generation(
+        FIXTURE_ISSUE_ID,
+        db_session,
+        generation_backend=_TimingOutBackend(),
+        embedding_backend=FakeEmbeddingBackend(),
+        candidate_limit=3,
+    )
+
+    assert _attempts(db_session, run)[0].failure_type == FailureType.TIMEOUT

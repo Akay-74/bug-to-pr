@@ -8,9 +8,15 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import time
 from pathlib import Path
 
 from backend.config import settings
+
+
+# Wait before each retry of a full clone; the last entry is 0 because there is
+# nothing to wait for after the final attempt.
+_CLONE_BACKOFF_SECONDS = (5.0, 20.0, 0.0)
 
 
 def resolve_clone_source(repo: str) -> str:
@@ -150,13 +156,7 @@ def clone_and_checkout(repo: str, base_commit: str, workspace: Path) -> None:
         )
         return
 
-    shutil.rmtree(workspace)
-    subprocess.run(
-        ["git", "clone", "--quiet", source, str(workspace)],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    _full_clone_with_retries(source, workspace)
     subprocess.run(
         ["git", "checkout", "--quiet", base_commit],
         cwd=workspace,
@@ -164,3 +164,29 @@ def clone_and_checkout(repo: str, base_commit: str, workspace: Path) -> None:
         capture_output=True,
         text=True,
     )
+
+
+def _full_clone_with_retries(source: str, workspace: Path) -> None:
+    """Clone `source`, retrying a transient network failure.
+
+    Cloning real benchmark repositories is the most failure-prone step in the
+    pipeline: it is the only one that depends on the network for hundreds of
+    megabytes. During a benchmark evaluation three consecutive issues were
+    lost to `git clone` exiting 128 while the machine was under memory
+    pressure -- a clone that succeeded when retried by hand a minute later.
+    Losing a whole issue to that is far more expensive than waiting.
+    """
+    last: subprocess.CalledProcessError | None = None
+    for delay in _CLONE_BACKOFF_SECONDS:
+        shutil.rmtree(workspace, ignore_errors=True)
+        result = subprocess.run(
+            ["git", "clone", "--quiet", source, str(workspace)], capture_output=True, text=True
+        )
+        if result.returncode == 0:
+            return
+        last = subprocess.CalledProcessError(
+            result.returncode, result.args, output=result.stdout, stderr=result.stderr
+        )
+        if delay:
+            time.sleep(delay)
+    raise last

@@ -155,3 +155,54 @@ def test_mirror_path_is_confined_to_the_cache_directory(isolated_cache):
     for repo in ("org/repo", "../../etc/evil", "/absolute/path", "a/b/c"):
         resolved = _mirror_path(repo).resolve()
         assert cache_root in resolved.parents, f"{repo} escaped the cache dir"
+
+
+# --- clone retries ---------------------------------------------------------
+
+
+def test_a_transient_clone_failure_is_retried(monkeypatch, tmp_path):
+    """Regression: three benchmark issues were lost to `git clone` exiting
+    128 under memory pressure; the same clone worked when retried.
+    """
+    import subprocess
+
+    from backend.tools import git as git_mod
+
+    monkeypatch.setattr(git_mod.time, "sleep", lambda _s: None)
+    attempts = []
+
+    def flaky_clone(args, **kwargs):
+        attempts.append(args)
+        if len(attempts) == 1:
+            return subprocess.CompletedProcess(args, 128, "", "fatal: early EOF")
+        Path(args[-1]).mkdir(parents=True, exist_ok=True)
+        return subprocess.CompletedProcess(args, 0, "", "")
+
+    monkeypatch.setattr(subprocess, "run", flaky_clone)
+
+    git_mod._full_clone_with_retries("https://example.test/repo.git", tmp_path / "ws")
+
+    assert len(attempts) == 2
+
+
+def test_clone_retries_are_bounded_and_raise_the_real_error(monkeypatch, tmp_path):
+    import subprocess
+
+    import pytest
+
+    from backend.tools import git as git_mod
+
+    monkeypatch.setattr(git_mod.time, "sleep", lambda _s: None)
+    attempts = []
+
+    def always_fails(args, **kwargs):
+        attempts.append(args)
+        return subprocess.CompletedProcess(args, 128, "", "fatal: could not read from remote")
+
+    monkeypatch.setattr(subprocess, "run", always_fails)
+
+    with pytest.raises(subprocess.CalledProcessError) as info:
+        git_mod._full_clone_with_retries("https://example.test/repo.git", tmp_path / "ws")
+
+    assert len(attempts) == len(git_mod._CLONE_BACKOFF_SECONDS)
+    assert "could not read from remote" in info.value.stderr

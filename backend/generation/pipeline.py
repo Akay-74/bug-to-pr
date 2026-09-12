@@ -209,8 +209,18 @@ def _run_one_candidate(
             issue, candidates, source_by_file, file_contents, generation_backend, previous_notes
         )
     except (ModelUnavailableError, GenerationTimeoutError) as exc:
+        # The model service being unreachable, out of quota or too slow says
+        # nothing about the model's ability to fix the bug, so it must not be
+        # scored as one (docs/phase5.md: distinguish environment failures from
+        # model failures). TIMEOUT and ENVIRONMENT_ERROR are both excluded
+        # from the success rate by the evaluation harness.
+        failure = (
+            FailureType.TIMEOUT
+            if isinstance(exc, GenerationTimeoutError)
+            else FailureType.ENVIRONMENT_ERROR
+        )
         _record_check(db, attempt, "generation", VerificationStatus.ERROR, "generate", -1, "", str(exc), 0)
-        _fail_attempt(db, attempt, FailureType.GENERATION_ERROR)
+        _fail_attempt(db, attempt, failure)
         previous_notes.append(f"Model unavailable/timed out: {exc}")
         return _CandidateOutcome(success=False, stop_pipeline=True)
     except MalformedPatchError as exc:

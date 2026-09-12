@@ -307,3 +307,16 @@ def test_redact_removes_the_configured_api_key_whatever_its_format(monkeypatch):
     monkeypatch.setattr(settings, "GENERATION_API_KEY", SecretStr(unusual))
 
     assert unusual not in redact(f"upstream said: bad key {unusual}")
+
+
+def test_a_retry_delay_in_the_response_body_is_honoured(monkeypatch, no_sleep):
+    """Gemini sends no Retry-After header; it writes the delay into the
+    error message ("Please retry in 36.04359451s").
+    """
+    body = '{"error": {"code": 429, "message": "Quota exceeded. Please retry in 36.04359451s."}}'
+    responses = [_FakeChatResponse(429, {}, body), _FakeChatResponse()]
+    monkeypatch.setattr(httpx, "post", lambda *a, **k: responses.pop(0))
+
+    _hosted().generate("prompt", timeout=30)
+
+    assert no_sleep == [36.04359451]
